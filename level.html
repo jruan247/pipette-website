@@ -53,36 +53,68 @@
   .progress-bar{height:9px;background:#dfe9f2;border-radius:99px;overflow:hidden;margin-top:10px;}
   #progressFill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--blue2),var(--green2));transition:width .45s ease;}
 
-  .level-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px;}
-  @media (max-width:1180px){.level-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
-  @media (max-width:860px){.level-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-  @media (max-width:560px){.level-grid{grid-template-columns:1fr;}}
-  .level-card{
-    position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;
-    padding:17px 18px 15px;min-height:172px;display:flex;flex-direction:column;gap:8px;
-    cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
-    overflow:hidden;
+  .level-path{
+    --node-size:46px; --node-gap:14px;
+    max-width:1020px;margin:18px auto 0;display:flex;flex-direction:column;
   }
-  .level-card:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(18,42,66,.10);border-color:#b9d7ec;}
-  .level-card.current{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(26,126,196,.13),0 14px 28px rgba(18,42,66,.08);}
-  .level-card.current::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--blue2),#61b7e6);}
-  .level-card.cleared{border-color:#bfe3cf;background:linear-gradient(160deg,#ffffff,#f4fcf7);}
-  .level-card.cleared::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--green2),#7bd3ad);}
-  .level-card.locked{opacity:.56;cursor:not-allowed;background:#f7fafc;filter:saturate(.7);}
-  .level-card.locked:hover{transform:none;box-shadow:none;border-color:var(--line);}
-  .card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-  .num{font-size:12px;font-weight:800;letter-spacing:.08em;color:#8aa2b6;font-variant-numeric:tabular-nums;}
-  .level-card.current .num{color:var(--blue2);}
-  .level-card.cleared .num{color:var(--green);}
+  .level-row{display:flex;align-items:flex-start;gap:var(--node-gap);position:relative;}
+  .level-node{
+    flex:none;width:var(--node-size);height:var(--node-size);border-radius:50%;
+    display:grid;place-items:center;margin-top:20px;
+    background:#fff;border:2px solid #cfdeea;color:#7d95aa;
+    font-weight:900;font-size:15px;line-height:1;
+    box-shadow:0 3px 10px rgba(18,42,66,.06);z-index:2;
+  }
+  .level-row.current .level-node{background:linear-gradient(160deg,#1a7ec4,#0f5c9c);border-color:#1a7ec4;color:#fff;box-shadow:0 0 0 5px rgba(26,126,196,.14);}
+  .level-row.cleared .level-node{background:linear-gradient(160deg,#1f9e74,#15805a);border-color:#1f9e74;color:#fff;}
+  .level-row.locked .level-node{background:#f4f8fb;border-color:#e0e9f1;color:#a8bac8;}
+  .level-card{
+    position:relative;flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);
+    border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:18px;
+    box-shadow:0 4px 16px rgba(18,42,66,.045);overflow:hidden;
+    transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .level-row.current .level-card{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(26,126,196,.12),0 12px 26px rgba(18,42,66,.08);}
+  .level-row.current .level-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--blue2),#61b7e6);}
+  .level-row.cleared .level-card{border-color:#bfe3cf;background:linear-gradient(160deg,#ffffff,#f5fcf8);}
+  .level-row.cleared .level-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--green2),#7bd3ad);}
+  .level-row.locked .level-card{background:#f7fafc;opacity:.62;filter:saturate(.7);}
+  .level-card-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+  .level-title-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .level-title-line .step{font-size:10px;font-weight:800;letter-spacing:.1em;color:#8aa2b6;white-space:nowrap;}
+  .level-row.current .level-title-line .step{color:var(--blue2);}
+  .level-row.cleared .level-title-line .step{color:var(--green);}
+  .level-title-line h3{font-size:18px;line-height:1.25;margin:0;letter-spacing:-.01em;}
+  .level-card p{font-size:12.5px;color:#5f7a90;margin:0;line-height:1.5;}
   .status{font-size:10.5px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap;background:#f1f6fa;color:#637f96;border:1px solid #dfe9f2;}
-  .level-card.current .status{background:#eaf5ff;border-color:#c4e0f4;color:#0f5c9c;}
-  .level-card.cleared .status{background:#e9f8f1;border-color:#c4e8d7;color:#14664b;}
-  .level-card h3{font-size:19px;line-height:1.25;margin:0;letter-spacing:-.01em;}
-  .level-card p{font-size:12.5px;color:#5f7a90;margin:0;line-height:1.55;min-height:38px;}
-  .card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed #e6eef5;font-size:11px;color:#8aa2b6;}
-  .card-foot .go{font-weight:800;color:var(--blue2);}
-  .level-card.cleared .card-foot .go{color:var(--green);}
-  .lock-dot{font-size:12px;color:#9aafbe;}
+  .level-row.current .status{background:#eaf5ff;border-color:#c4e0f4;color:#0f5c9c;}
+  .level-row.cleared .status{background:#e9f8f1;border-color:#c4e8d7;color:#14664b;}
+  .level-action{flex:none;display:flex;align-items:center;justify-content:flex-end;}
+  .start-btn{
+    min-width:116px;border:0;border-radius:10px;padding:10px 14px;font-size:12.5px;font-weight:800;
+    color:#fff;background:linear-gradient(160deg,#1a7ec4,#0b3f6b);cursor:pointer;transition:.15s;
+    box-shadow:0 6px 14px rgba(15,92,156,.16);
+  }
+  .start-btn:hover{background:linear-gradient(160deg,#2189cf,#0a3f6d);}
+  .start-btn.replay{background:#fff;color:#1d4d72;border:1px solid #cfe0ee;box-shadow:none;}
+  .start-btn.replay:hover{background:#f4faff;border-color:#a9d3ee;}
+  .start-btn:disabled{opacity:.5;cursor:not-allowed;background:#e9f0f6;color:#8aa2b6;border:1px solid #dbe6ef;box-shadow:none;}
+  .level-arrow{
+    flex:none;height:32px;width:2px;margin-left:calc(var(--node-size) / 2 - 1px);
+    background:linear-gradient(#c7d8e5,#8fb6d1);position:relative;
+  }
+  .level-arrow::after{content:"";position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);
+    border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #8fb6d1;}
+  .level-arrow.done{background:linear-gradient(#bfe3cf,#1f9e74);}
+  .level-arrow.done::after{border-top-color:#1f9e74;}
+  @media (max-width:640px){
+    .level-path{--node-size:38px;--node-gap:10px;}
+    .level-node{margin-top:16px;font-size:13px;}
+    .level-card{flex-wrap:wrap;padding:13px 14px;gap:10px;}
+    .level-action{width:100%;}
+    .start-btn{width:100%;}
+    .level-title-line h3{font-size:17px;}
+  }
   .map-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:16px;color:var(--muted);font-size:12px;}
   .link-btn{border:0;background:none;color:#7d95aa;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:4px;}
   .link-btn:hover{color:var(--red);}
@@ -134,8 +166,8 @@
     opacity:0;transform:translateY(6px);transition:.18s;pointer-events:none;
   }
   .stage-hint.on{opacity:1;transform:none;}
-  .hud{display:flex;flex-wrap:wrap;gap:7px;padding:10px 13px;border-top:1px solid var(--line);background:#fbfdff;}
-  .chip{font-size:11.5px;border-radius:999px;padding:3px 9px;border:1px solid #d8e4ef;background:#f4f9fd;color:#3c6785;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .hud{display:flex;flex-wrap:wrap;gap:9px;padding:13px 15px;border-top:1px solid var(--line);background:#fbfdff;}
+  .chip{font-size:13px;line-height:1.45;border-radius:999px;padding:5px 12px;border:1px solid #d8e4ef;background:#f4f9fd;color:#3c6785;white-space:nowrap;font-variant-numeric:tabular-nums;}
   .chip.ok{border-color:#bfe3cf;background:#f0fbf5;color:#1a6b4c;}
   .chip.bad{border-color:#f0d6c8;background:#fdf4ef;color:#9a4a22;}
   .chip.warn{border-color:#eeddbd;background:#fdf8ee;color:#8a6212;}
@@ -173,7 +205,7 @@
   .gear-action.zero{background:#fff;border-color:#cfe0ee;color:#365a75;box-shadow:none;font-weight:700;}
   .gear-action:disabled{opacity:.34;cursor:not-allowed;box-shadow:none;filter:grayscale(.35);}
   .gear-meter{display:flex;gap:6px;margin-top:10px;}
-  .gear-meter span{flex:1;text-align:center;font-size:10.5px;font-weight:800;padding:4px 0;border-radius:7px;background:#f1f6fa;color:#9aafbe;border:1px solid #e4edf4;}
+  .gear-meter span{flex:1;text-align:center;font-size:11.5px;font-weight:800;padding:5px 0;border-radius:7px;background:#f1f6fa;color:#9aafbe;border:1px solid #e4edf4;}
   .gear-meter span.on{background:#fff6d6;color:#7a5a00;border-color:#e6cf85;}
 
   .vol-readout{font-family:Consolas,monospace;font-size:38px;font-weight:800;color:#0d3f66;line-height:1;letter-spacing:-.02em;margin:8px 0 2px;}
@@ -189,7 +221,7 @@
   .tilt-sub{font-size:11px;color:#8aa2b6;margin-bottom:2px;}
 
   .substeps{display:flex;gap:6px;margin:10px 0 2px;}
-  .substeps span{flex:1;text-align:center;font-size:10.5px;font-weight:800;padding:5px 0;border-radius:7px;background:#f1f6fa;color:#9aafbe;border:1px solid #e4edf4;}
+  .substeps span{flex:1;text-align:center;font-size:11.5px;font-weight:800;padding:6px 0;border-radius:7px;background:#f1f6fa;color:#9aafbe;border:1px solid #e4edf4;}
   .substeps span.on{background:#eaf5ff;color:#0f5c9c;border-color:#c4e0f4;}
 
   .kbd-note{font-size:11px;color:#8aa2b6;margin-top:10px;line-height:1.6;}
@@ -242,7 +274,7 @@
       <div>
         <p class="eyebrow">PIPETTE TRAINING · 7 LEVELS</p>
         <h1>移液器闯关</h1>
-        <p class="sub">每一关只练一个动作。做完本关就回到这里，下一关自动解锁。七关走完，就是一次完整的 150.0 µL 移液。</p>
+        <p class="sub">七道小关，练出一支稳准的手。从拧对刻度、扣紧枪头，到吸液贴壁、二档吹干——每一步都是实验室里真实会翻车的地方。不用背手册，玩一遍就记住。</p>
       </div>
       <div class="progress-box">
         <div class="progress-top">
@@ -259,7 +291,7 @@
       <div><b>七关全部通关</b><br><span>你已经走完装吸头 → 调体积 → 预润洗 → 吸液 → 排液 → 退吸头 → 收尾。</span></div>
     </div>
 
-    <div id="levelGrid" class="level-grid" aria-label="七关地图"></div>
+    <div id="levelGrid" class="level-path" aria-label="七关地图"></div>
 
     <footer class="map-foot">
       <span>每关只显示本关需要的模型、操作和指引；完成后自动回到这张地图。</span>
@@ -518,19 +550,37 @@ function renderMap(justCleared) {
     : `下一关：第 ${max} 关 · ${LEVELS[max - 1].title}`;
   $("#allClear").classList.toggle("hidden", !all);
 
-  $("#levelGrid").innerHTML = LEVELS.map(L => {
+  $("#levelGrid").innerHTML = LEVELS.map((L, idx) => {
     const cleared = isCleared(L.n);
     const unlocked = isUnlocked(L.n);
     const current = !cleared && L.n === max;
-    const cls = ["level-card", cleared ? "cleared" : "", unlocked ? "unlocked" : "locked", current ? "current" : ""].join(" ");
-    const status = cleared ? "已通关" : current ? "开始挑战" : unlocked ? "可挑战" : "未解锁";
-    const foot = cleared ? "✓ 完成" : unlocked ? (current ? "进入 →" : "进入 →") : "🔒 锁定";
-    return `<article class="${cls}" data-level="${L.n}" ${unlocked ? 'tabindex="0" role="button"' : 'aria-disabled="true"'}>
-      <div class="card-top"><span class="num">STEP ${String(L.n).padStart(2, "0")}</span><span class="status">${status}</span></div>
-      <h3>${L.title}</h3>
-      <p>${L.desc}</p>
-      <div class="card-foot"><span>${L.tag}</span><span class="go">${foot}</span></div>
-    </article>`;
+    const rowCls = ["level-row", cleared ? "cleared" : "", unlocked ? "unlocked" : "locked", current ? "current" : ""].join(" ");
+    const status = cleared ? "已通关" : current ? "当前关卡" : "未解锁";
+    const aria = cleared
+      ? `开始挑战第 ${L.n} 关：${L.title}（已通关，可重玩）`
+      : current ? `开始挑战第 ${L.n} 关：${L.title}` : `第 ${L.n} 关未解锁`;
+    const btn = cleared
+      ? `<button class="start-btn replay" type="button" data-level="${L.n}" aria-label="${aria}">开始挑战</button>`
+      : current
+        ? `<button class="start-btn" type="button" data-level="${L.n}" aria-label="${aria}">开始挑战</button>`
+        : `<button class="start-btn" type="button" disabled aria-label="${aria}">未解锁</button>`;
+    const arrow = idx < LEVELS.length - 1
+      ? `<div class="level-arrow ${cleared ? "done" : ""}" aria-hidden="true"></div>`
+      : "";
+    return `<div class="${rowCls}">
+      <div class="level-node" aria-hidden="true">${cleared ? "✓" : L.n}</div>
+      <article class="level-card">
+        <div class="level-card-main">
+          <div class="level-title-line">
+            <span class="step">STEP ${String(L.n).padStart(2, "0")} · ${L.tag}</span>
+            <h3>${L.title}</h3>
+            <span class="status">${status}</span>
+          </div>
+          <p>${L.desc}</p>
+        </div>
+        <div class="level-action">${btn}</div>
+      </article>
+    </div>${arrow}`;
   }).join("");
 
   if (justCleared) {
@@ -541,22 +591,11 @@ function renderMap(justCleared) {
 }
 
 $("#levelGrid").addEventListener("click", e => {
-  const card = e.target.closest(".level-card");
-  if (!card) return;
-  const n = Number(card.dataset.level);
-  if (!isUnlocked(n)) {
-    showToast(`先完成第 ${n - 1} 关，才能挑战这一关`);
-    return;
-  }
+  const btn = e.target.closest(".start-btn[data-level]");
+  if (!btn || btn.disabled) return;
+  const n = Number(btn.dataset.level);
+  if (!isUnlocked(n)) return;
   startLevel(n);
-});
-$("#levelGrid").addEventListener("keydown", e => {
-  if (e.key !== "Enter" && e.key !== " ") return;
-  const card = e.target.closest(".level-card");
-  if (!card) return;
-  e.preventDefault();
-  const n = Number(card.dataset.level);
-  if (isUnlocked(n)) startLevel(n);
 });
 
 $("#resetProgress").addEventListener("click", () => {
