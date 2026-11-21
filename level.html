@@ -166,6 +166,20 @@
     opacity:0;transform:translateY(6px);transition:.18s;pointer-events:none;
   }
   .stage-hint.on{opacity:1;transform:none;}
+  .thumb-prompt{
+    position:absolute;left:14px;top:12px;z-index:6;
+    max-width:72%;padding:7px 14px;border-radius:12px;text-align:left;
+    background:rgba(8,26,40,.92);border:1px solid #2f5a7a;color:#eaf6ff;
+    font-size:12.5px;font-weight:700;line-height:1.45;pointer-events:none;
+    box-shadow:0 6px 18px rgba(8,26,40,.16);
+  }
+  .thumb-prompt.ok{background:rgba(10,64,44,.95);border-color:#2e8b64;color:#d9ffed;}
+  .stage-wrap.thumb-mode, .stage-wrap.thumb-mode *{cursor:none !important;}
+  .thumb-cursor{
+    position:fixed;left:0;top:0;z-index:140;font-size:38px;line-height:1;pointer-events:none;
+    transform:translate(-50%,-72%);filter:drop-shadow(0 4px 4px rgba(8,26,40,.28));
+    will-change:left,top;
+  }
   .hud{display:flex;flex-wrap:wrap;gap:9px;padding:13px 15px;border-top:1px solid var(--line);background:#fbfdff;}
   .chip{font-size:13px;line-height:1.45;border-radius:999px;padding:5px 12px;border:1px solid #d8e4ef;background:#f4f9fd;color:#3c6785;white-space:nowrap;font-variant-numeric:tabular-nums;}
   .chip.ok{border-color:#bfe3cf;background:#f0fbf5;color:#1a6b4c;}
@@ -178,6 +192,17 @@
   .control-title{font-size:14px;font-weight:800;color:#123c5c;margin:0 0 8px;letter-spacing:.01em;}
   .control-note{font-size:11.5px;color:#7d95aa;line-height:1.6;margin-top:10px;}
   .control-note b{color:#365a75;}
+  .thumb-step{display:flex;align-items:center;gap:10px;background:#f7fbfe;border:1px solid #dbe8f4;border-radius:12px;padding:10px;margin-bottom:10px;}
+  .thumb-step .thumb-emoji{font-size:26px;line-height:1;flex:none;}
+  .thumb-step .thumb-copy{flex:1;min-width:0;font-size:11.5px;color:#5f7a90;line-height:1.45;}
+  .thumb-step .thumb-copy b{display:block;color:#123c5c;font-size:12.5px;}
+  .thumb-step.done{background:#effbf5;border-color:#bfe3cf;}
+  .thumb-step.done .thumb-copy b{color:#14664b;}
+  .mini-btn{border:1px solid #cfe0ee;background:#fff;border-radius:8px;padding:7px 10px;font-size:11.5px;font-weight:800;color:#1d4d72;cursor:pointer;white-space:nowrap;}
+  .mini-btn:hover{background:#f4faff;border-color:#a9d3ee;}
+  .mini-btn:disabled{opacity:.55;cursor:not-allowed;color:#7d95aa;background:#f4f8fb;}
+  #thumbTarget{animation:thumbPulse 1.5s ease-in-out infinite;}
+  @keyframes thumbPulse{0%,100%{opacity:.72}50%{opacity:1}}
   .inline-error{background:#fdf1ee;border:1px solid #efc9bf;color:#8a2f22;border-radius:10px;padding:9px 11px;font-size:12px;line-height:1.5;margin-top:11px;}
   .primary-btn{
     width:100%;border:0;border-radius:11px;padding:12px 14px;font-size:14px;font-weight:800;color:#fff;
@@ -320,6 +345,7 @@
         </div>
         <div class="stage-wrap">
           <svg id="stageSvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet" aria-label="本关操作场景"></svg>
+          <div class="thumb-prompt hidden" id="thumbPrompt"></div>
           <div class="stage-hint" id="stageHint"></div>
         </div>
         <div class="hud" id="hud"></div>
@@ -334,6 +360,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="thumb-cursor hidden" id="thumbCursor" aria-hidden="true">👍</div>
 
 <div class="overlay hidden" id="completeOverlay">
   <div class="complete-card">
@@ -417,13 +444,13 @@ const LEVELS = [
   },
   {
     n: 6, key: "eject", title: "退吸头", tag: "EJECT",
-    desc: "把空吸头移到废液桶上方退掉。",
-    setup: "本关起点：吸头已空",
+    desc: "先放大拇指，再把空吸头退进废液桶。",
+    setup: "本关起点：吸头已空 · 大拇指未就位",
     goal: "把空吸头退进废液桶。",
-    action: "把吸头移到桶口上方 → 点“退吸头”。",
+    action: "先把大拇指放到枪身右上方的灰色退头杆上 → 把吸头移到桶口上方 → 点“退吸头”。",
     success: "吸头落入桶内，且吸头内为空。",
-    mistake: "没对准桶口 / 吸头还有液体 / 已经没有吸头。",
-    why: "防止带液退头污染台面或样品。"
+    mistake: "没放大拇指 / 没对准桶口 / 吸头还有液体 / 已经没有吸头。",
+    why: "退头时大拇指先就位，再对准桶口，能避免带液或弹飞。"
   },
   {
     n: 7, key: "home", title: "收尾", tag: "HOME",
@@ -617,6 +644,7 @@ async function startLevel(n) {
   $("#completeOverlay").classList.add("hidden");
   $("#toast").classList.remove("on");
   $("#stageHint").classList.remove("on");
+  clearThumbChrome();
   $("#levelNum").textContent = n;
   $("#levelTitle").textContent = LEVELS[n - 1].title;
   $("#stageSetup").textContent = LEVELS[n - 1].setup;
@@ -654,7 +682,7 @@ function createSession(n) {
     n, x: 0, y: 0, scale: 0.55, tilt: 0, gear: 0,
     tip: false, tipOk: false, tipVol: 0,
     vol: 200, srcVol: 900, dstVol: 0,
-    rinsed: 0, rinseStep: 0, armed: false,
+    rinsed: 0, rinseStep: 0, armed: false, thumb: false,
     stage1: false, stage2: false, done: false
   };
   if (n === 1) { s.x = 174; s.y = 300; s.scale = 0.60; }
@@ -662,7 +690,7 @@ function createSession(n) {
   if (n === 3) { s.x = 350; s.y = 340; s.tip = true; s.vol = 150; s.tipVol = 0; s.srcVol = 900; }
   if (n === 4) { s.x = 350; s.y = 340; s.tip = true; s.vol = 150; s.tipVol = 0; s.srcVol = 900; }
   if (n === 5) { s.x = 646; s.y = 340; s.tip = true; s.tipVol = 150; s.dstVol = 0; }
-  if (n === 6) { s.x = 760; s.y = 300; s.tip = true; s.tipVol = 0; }
+  if (n === 6) { s.x = 760; s.y = 300; s.tip = true; s.tipVol = 0; s.thumb = false; }
   if (n === 7) { s.x = 500; s.y = 350; s.tip = false; }
   return s;
 }
@@ -731,6 +759,18 @@ function pipetteMarkup() {
       <rect id="tipLiq" x="-4.6" y="-6" width="9.2" height="0" fill="url(#gWater)" opacity=".92"/>
     </g>
     <rect id="pipHit" x="-42" y="-370" width="84" height="310" fill="transparent" pointer-events="all"/>
+    <g id="thumbTarget" style="display:none;cursor:pointer">
+      <circle cx="14" cy="-308" r="48" fill="transparent"/>
+      <circle cx="14" cy="-308" r="32" fill="rgba(224,138,18,.14)" stroke="#e08a12" stroke-width="2.6" stroke-dasharray="5 4"/>
+      <circle cx="14" cy="-308" r="4" fill="#e08a12" pointer-events="none"/>
+      <circle cx="44" cy="-330" r="11" fill="#e08a12"/>
+      <text x="44" y="-325" text-anchor="middle" font-size="14" fill="#fff" font-weight="700" pointer-events="none">1</text>
+    </g>
+    <g id="thumbPlaced" style="display:none" pointer-events="none">
+      <circle cx="14" cy="-308" r="32" fill="rgba(31,158,116,.16)" stroke="#1f9e74" stroke-width="2.2"/>
+      <text x="14" y="-298" text-anchor="middle" font-size="32">👍</text>
+      <text x="14" y="-270" text-anchor="middle" font-size="13" fill="#15805a" font-weight="700">已就位</text>
+    </g>
   </g>`;
 }
 
@@ -859,6 +899,11 @@ function renderStage(n) {
     svg.setAttribute("viewBox", "720 80 260 420");
     svg.innerHTML = sceneDefs() + background(1000, 620, 470) + wasteMarkup() + pipetteMarkup();
     bindDrag(n);
+    const thumb = document.getElementById("thumbTarget");
+    if (thumb) {
+      thumb.addEventListener("pointerdown", e => e.stopPropagation());
+      thumb.addEventListener("click", e => { e.stopPropagation(); placeThumb(); });
+    }
     updateWasteVisuals();
   } else if (n === 7) {
     svg.setAttribute("viewBox", "400 100 560 400");
@@ -968,10 +1013,16 @@ function renderControls(n) {
   } else if (n === 6) {
     cc.innerHTML = `
       <h3 class="control-title">退吸头</h3>
-      <button id="ejectBtn" class="primary-btn" type="button" disabled>退吸头</button>
-      <div class="control-note">把吸头移到废液桶口上方；吸头必须是空的，按钮才会亮。</div>
-      <div class="kbd-note">提示：本关起点吸头已排空。</div>
+      <div class="thumb-step" id="thumbStep">
+        <div class="thumb-emoji">👍</div>
+        <div class="thumb-copy"><b>① 放置大拇指到退枪头位置</b><span>先把大拇指移进圈内</span></div>
+        <button id="thumbBtn" class="mini-btn" type="button">放这里</button>
+      </div>
+      <button id="ejectBtn" class="primary-btn" type="button" disabled>② 按下大拇指退吸头</button>
+      <div class="control-note">鼠标就是大拇指：移到枪身右上方灰色退头杆的圈内，点一下；位置正确后，退吸头按钮才会解锁。</div>
+      <div class="kbd-note">本关起点吸头已排空；带液退头会被阻止。</div>
     `;
+    $("#thumbBtn").addEventListener("click", placeThumb);
     $("#ejectBtn").addEventListener("click", tryEject);
   } else if (n === 7) {
     cc.innerHTML = `
@@ -1265,9 +1316,18 @@ function confirmTip() {
   updateAll();
   completeLevel();
 }
+function placeThumb() {
+  const s = session;
+  if (!s || s.n !== 6 || s.thumb) return;
+  s.thumb = true;
+  clearError();
+  stageHint("放置位置正确：已解锁“按下大拇指退吸头”，现在把吸头对准废液桶口");
+  updateAll();
+}
 function tryEject() {
   const s = session;
   if (!s || s.n !== 6) return;
+  if (!s.thumb) { setError("先把大拇指放到枪身右上方的退头杆上。"); return; }
   if (!s.tip) { setError("已经没有吸头了。"); return; }
   if (s.tipVol >= 0.5) { setError("先排空吸头，不能带液退。"); return; }
   if (!overWaste()) { setError("再对准桶口：把吸头移到绿色虚线区。"); return; }
@@ -1364,6 +1424,7 @@ function updateHUD() {
     html += chip("目标", s.dstVol.toFixed(0) + " µL", s.dstVol === 150 ? "ok" : "");
     html += chip("吸头", s.tipVol.toFixed(0) + " µL", s.tipVol > 0 ? "ok" : "");
   } else if (s.n === 6) {
+    html += chip("大拇指", s.thumb ? "就位" : "未放", s.thumb ? "ok" : "warn");
     html += chip("吸头", s.tip ? (s.tipVol > 0 ? s.tipVol.toFixed(0) + " µL" : "已空") : "已退", s.tip ? (s.tipVol > 0 ? "bad" : "ok") : "ok");
     html += chip("桶口", overWaste() ? "对准" : "未对准", overWaste() ? "ok" : "warn");
   } else if (s.n === 7) {
@@ -1424,8 +1485,31 @@ function updateWasteVisuals() {
   const s = session;
   const hit = $("#wasteHit");
   if (hit) hit.setAttribute("opacity", overWaste() ? "1" : "0");
+  const target = $("#thumbTarget");
+  const placed = $("#thumbPlaced");
+  if (target) target.style.display = s && s.thumb ? "none" : "";
+  if (placed) placed.style.display = s && s.thumb ? "" : "none";
+  const step = $("#thumbStep");
+  if (step) step.classList.toggle("done", !!(s && s.thumb));
+  const thumbBtn = $("#thumbBtn");
+  if (thumbBtn) {
+    thumbBtn.disabled = !!(s && s.thumb);
+    thumbBtn.textContent = s && s.thumb ? "已就位" : "放这里";
+  }
+  const prompt = $("#thumbPrompt");
+  if (prompt) {
+    prompt.classList.remove("hidden");
+    prompt.classList.toggle("ok", !!(s && s.thumb));
+    prompt.textContent = s && s.thumb
+      ? "✓ 放置位置正确，已解锁“按下大拇指退吸头”"
+      : "放置大拇指到退枪头位置";
+  }
+  const wrap = document.querySelector(".stage-wrap");
+  if (wrap) wrap.classList.toggle("thumb-mode", !!(s && !s.thumb));
+  const cursor = $("#thumbCursor");
+  if (cursor && (!s || s.thumb)) cursor.classList.add("hidden");
   const btn = $("#ejectBtn");
-  if (btn) btn.disabled = !(s && s.tip && s.tipVol < 0.5 && overWaste());
+  if (btn) btn.disabled = !(s && s.thumb && s.tip && s.tipVol < 0.5);
 }
 
 function updateHomeVisuals() {
@@ -1480,8 +1564,21 @@ $("#completeBack").addEventListener("click", () => {
   if (lastComplete) returnToMap(lastComplete.n);
 });
 
+function clearThumbChrome() {
+  const wrap = document.querySelector(".stage-wrap");
+  if (wrap) wrap.classList.remove("thumb-mode");
+  const cursor = $("#thumbCursor");
+  if (cursor) cursor.classList.add("hidden");
+  const prompt = $("#thumbPrompt");
+  if (prompt) {
+    prompt.classList.add("hidden");
+    prompt.classList.remove("ok");
+  }
+}
+
 function returnToMap(justCleared) {
   clearTimeout(completeTimer);
+  clearThumbChrome();
   $("#completeOverlay").classList.add("hidden");
   $("#levelView").classList.add("hidden");
   $("#mapView").classList.remove("hidden");
@@ -1493,6 +1590,7 @@ function returnToMap(justCleared) {
 
 $("#backBtn").addEventListener("click", () => {
   clearTimeout(completeTimer);
+  clearThumbChrome();
   $("#completeOverlay").classList.add("hidden");
   $("#levelView").classList.add("hidden");
   $("#mapView").classList.remove("hidden");
@@ -1501,6 +1599,29 @@ $("#backBtn").addEventListener("click", () => {
   renderMap();
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
+
+/* ---------------- 大拇指光标 ---------------- */
+(function initThumbCursor() {
+  const wrap = document.querySelector(".stage-wrap");
+  const cursor = $("#thumbCursor");
+  if (!wrap || !cursor) return;
+  const active = () => session && session.n === 6 && !session.thumb;
+  const setPos = e => {
+    cursor.style.left = e.clientX + "px";
+    cursor.style.top = e.clientY + "px";
+  };
+  wrap.addEventListener("pointerenter", e => {
+    if (!active()) return;
+    setPos(e);
+    cursor.classList.remove("hidden");
+  });
+  wrap.addEventListener("pointermove", e => {
+    if (!active()) { cursor.classList.add("hidden"); return; }
+    setPos(e);
+    cursor.classList.remove("hidden");
+  });
+  wrap.addEventListener("pointerleave", () => cursor.classList.add("hidden"));
+})();
 
 /* ---------------- 启动 ---------------- */
 renderMap();
@@ -1518,6 +1639,7 @@ window.GAME = {
   setVolume,
   attachTip,
   confirmTip,
+  placeThumb,
   tryEject,
   confirmHome,
   completeLevel,
