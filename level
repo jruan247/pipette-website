@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>移液器闯关 · 7 关</title>
+<style>
+  :root{
+    --bg:#eef2f6; --panel:#fff; --ink:#12293d; --ink2:#3c5a75; --muted:#7c93a8;
+    --line:#dbe4ee; --blue:#0f5c9c; --blue2:#1a7ec4; --blue050:#f2f8fd;
+    --green:#15805a; --green2:#1f9e74; --amber:#b8720a; --red:#b23a2e;
+    --yellow:#f2c211; --yellow2:#ffe680;
+    --shadow:0 10px 30px rgba(18,42,66,.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{min-height:100%;}
+  body{
+    margin:0;background:
+      radial-gradient(1200px 600px at 15% -10%, #ffffff 0%, rgba(255,255,255,0) 60%),
+      radial-gradient(900px 500px at 100% 0%, #e6f1fb 0%, rgba(230,241,251,0) 55%),
+      var(--bg);
+    color:var(--ink);font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;}
+  .hidden{display:none !important;}
+  .app{max-width:1440px;margin:0 auto;padding:24px 24px 34px;}
+  .view{animation:fadeIn .28s ease both;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* ---------- 地图 ---------- */
+  .map-hero{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:28px;
+    background:
+      linear-gradient(135deg,rgba(255,255,255,.92),rgba(246,251,255,.92)),
+      linear-gradient(120deg,#eaf4ff,#f7fbff 45%,#eef8f3);
+    border:1px solid var(--line);border-radius:26px;padding:30px 32px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .map-hero::after{
+    content:"";position:absolute;right:-90px;top:-120px;width:360px;height:360px;border-radius:50%;
+    background:radial-gradient(circle,rgba(26,126,196,.13),rgba(26,126,196,0) 68%);
+    pointer-events:none;
+  }
+  .eyebrow{font-size:11px;letter-spacing:.22em;color:var(--blue2);font-weight:800;margin:0 0 4px;}
+  .map-hero h1{font-size:38px;line-height:1.1;margin:0 0 8px;letter-spacing:-.02em;}
+  .map-hero .sub{font-size:14px;color:var(--ink2);margin:0;max-width:640px;}
+  .progress-box{min-width:300px;background:rgba(255,255,255,.78);border:1px solid #d9e7f2;border-radius:18px;padding:15px 17px;backdrop-filter:blur(6px);}
+  .progress-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .progress-num{font-size:28px;font-weight:800;letter-spacing:-.03em;color:#0d3f66;font-variant-numeric:tabular-nums;}
+  .progress-num span{font-size:14px;color:var(--muted);font-weight:600;}
+  .progress-label{font-size:12px;color:var(--muted);margin-top:4px;}
+  .progress-bar{height:9px;background:#dfe9f2;border-radius:99px;overflow:hidden;margin-top:10px;}
+  #progressFill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--blue2),var(--green2));transition:width .45s ease;}
+
+  .level-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px;}
+  @media (max-width:1180px){.level-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+  @media (max-width:860px){.level-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media (max-width:560px){.level-grid{grid-template-columns:1fr;}}
+  .level-card{
+    position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:17px 18px 15px;min-height:172px;display:flex;flex-direction:column;gap:8px;
+    cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+    overflow:hidden;
+  }
+  .level-card:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(18,42,66,.10);border-color:#b9d7ec;}
+  .level-card.current{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(26,126,196,.13),0 14px 28px rgba(18,42,66,.08);}
+  .level-card.current::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--blue2),#61b7e6);}
+  .level-card.cleared{border-color:#bfe3cf;background:linear-gradient(160deg,#ffffff,#f4fcf7);}
+  .level-card.cleared::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--green2),#7bd3ad);}
+  .level-card.locked{opacity:.56;cursor:not-allowed;background:#f7fafc;filter:saturate(.7);}
+  .level-card.locked:hover{transform:none;box-shadow:none;border-color:var(--line);}
+  .card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .num{font-size:12px;font-weight:800;letter-spacing:.08em;color:#8aa2b6;font-variant-numeric:tabular-nums;}
+  .level-card.current .num{color:var(--blue2);}
+  .level-card.cleared .num{color:var(--green);}
+  .status{font-size:10.5px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap;background:#f1f6fa;color:#637f96;border:1px solid #dfe9f2;}
+  .level-card.current .status{background:#eaf5ff;border-color:#c4e0f4;color:#0f5c9c;}
+  .level-card.cleared .status{background:#e9f8f1;border-color:#c4e8d7;color:#14664b;}
+  .level-card h3{font-size:19px;line-height:1.25;margin:0;letter-spacing:-.01em;}
+  .level-card p{font-size:12.5px;color:#5f7a90;margin:0;line-height:1.55;min-height:38px;}
+  .card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed #e6eef5;font-size:11px;color:#8aa2b6;}
+  .card-foot .go{font-weight:800;color:var(--blue2);}
+  .level-card.cleared .card-foot .go{color:var(--green);}
+  .lock-dot{font-size:12px;color:#9aafbe;}
+  .map-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:16px;color:var(--muted);font-size:12px;}
+  .link-btn{border:0;background:none;color:#7d95aa;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:4px;}
+  .link-btn:hover{color:var(--red);}
+  .all-clear{
+    margin-top:14px;border:1px solid #bfe3cf;background:linear-gradient(135deg,#effcf5,#ffffff);
+    color:#14664b;border-radius:16px;padding:13px 16px;font-size:13px;display:flex;gap:10px;align-items:center;
+  }
+  .all-clear b{font-size:15px;}
+
+  /* ---------- 关卡页 ---------- */
+  .level-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:16px;}
+  .ghost-btn{border:1px solid #cfe0ee;background:#fff;color:#245072;border-radius:10px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .ghost-btn:hover{background:#f4faff;border-color:#a9d3ee;}
+  .level-head-main{display:flex;align-items:baseline;gap:12px;}
+  .level-kicker{font-size:10.5px;letter-spacing:.16em;color:var(--muted);font-weight:800;}
+  .level-head h2{font-size:25px;margin:0;letter-spacing:-.01em;}
+  .dots{display:flex;gap:7px;margin-left:auto;align-items:center;}
+  .dots span{width:11px;height:11px;border-radius:50%;background:#dbe6ef;border:1px solid #cfdbe6;transition:.2s;}
+  .dots span.done{background:var(--green2);border-color:var(--green2);}
+  .dots span.current{background:var(--blue2);border-color:var(--blue2);box-shadow:0 0 0 4px rgba(26,126,196,.15);}
+
+  .level-layout{display:grid;grid-template-columns:305px minmax(0,1fr) 300px;gap:16px;align-items:start;}
+  @media (max-width:1160px){.level-layout{grid-template-columns:260px minmax(0,1fr);} .control-card{grid-column:1 / -1;}}
+  @media (max-width:860px){.level-layout{grid-template-columns:1fr;} .control-card{grid-column:auto;}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 4px 16px rgba(18,42,66,.045);}
+  .guide-card{padding:18px 18px 16px;position:sticky;top:16px;}
+  @media (max-width:1160px){.guide-card{position:static;}}
+  .guide-setup{font-size:11px;color:#6d879c;background:#f5f9fc;border:1px solid #e0ebf3;border-radius:8px;padding:5px 9px;margin-bottom:12px;}
+  .guide-goal{font-size:18px;line-height:1.45;font-weight:800;letter-spacing:-.01em;margin:0 0 14px;color:#0d3f66;}
+  .guide-row{padding:9px 0;border-top:1px dashed #e7eef5;}
+  .guide-row .label{display:block;font-size:10.5px;letter-spacing:.08em;color:#8aa2b6;font-weight:800;margin-bottom:2px;}
+  .guide-row p{margin:0;font-size:12.5px;line-height:1.65;color:#365a75;}
+  .guide-row.why p{color:#6d879c;font-size:12px;}
+  .guide-row.mistake p{color:#8a5a2a;}
+
+  .stage-card{overflow:hidden;}
+  .stage-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:#fbfdff;flex-wrap:wrap;}
+  .stage-badge{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:#1a7ec4;background:#eaf5ff;border:1px solid #cfe6f6;border-radius:999px;padding:3px 9px;}
+  .stage-setup{font-size:11.5px;color:#7d95aa;}
+  .stage-wrap{position:relative;width:100%;aspect-ratio:4/3;background:
+    radial-gradient(700px 420px at 50% 0%,#ffffff 0%,rgba(255,255,255,0) 65%),
+    linear-gradient(#e9eef3,#dfe7ee);
+    touch-action:none;overflow:hidden;
+  }
+  #stageSvg{display:block;width:100%;height:100%;user-select:none;}
+  .stage-hint{
+    position:absolute;left:14px;bottom:14px;max-width:82%;background:rgba(8,26,40,.9);color:#eaf6ff;
+    font-size:12px;line-height:1.5;padding:8px 12px;border-radius:9px;border:1px solid #2f5a7a;
+    opacity:0;transform:translateY(6px);transition:.18s;pointer-events:none;
+  }
+  .stage-hint.on{opacity:1;transform:none;}
+  .hud{display:flex;flex-wrap:wrap;gap:7px;padding:10px 13px;border-top:1px solid var(--line);background:#fbfdff;}
+  .chip{font-size:11.5px;border-radius:999px;padding:3px 9px;border:1px solid #d8e4ef;background:#f4f9fd;color:#3c6785;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .chip.ok{border-color:#bfe3cf;background:#f0fbf5;color:#1a6b4c;}
+  .chip.bad{border-color:#f0d6c8;background:#fdf4ef;color:#9a4a22;}
+  .chip.warn{border-color:#eeddbd;background:#fdf8ee;color:#8a6212;}
+  .chip b{color:inherit;}
+
+  .control-card{padding:16px;position:sticky;top:16px;}
+  @media (max-width:1160px){.control-card{position:static;}}
+  .control-title{font-size:14px;font-weight:800;color:#123c5c;margin:0 0 8px;letter-spacing:.01em;}
+  .control-note{font-size:11.5px;color:#7d95aa;line-height:1.6;margin-top:10px;}
+  .control-note b{color:#365a75;}
+  .inline-error{background:#fdf1ee;border:1px solid #efc9bf;color:#8a2f22;border-radius:10px;padding:9px 11px;font-size:12px;line-height:1.5;margin-top:11px;}
+  .primary-btn{
+    width:100%;border:0;border-radius:11px;padding:12px 14px;font-size:14px;font-weight:800;color:#fff;
+    background:linear-gradient(160deg,#1a7ec4,#0b3f6b);cursor:pointer;transition:.15s;
+    box-shadow:0 8px 18px rgba(15,92,156,.18);
+  }
+  .primary-btn:hover{background:linear-gradient(160deg,#2189cf,#0a3f6d);}
+  .primary-btn:disabled{opacity:.38;cursor:not-allowed;box-shadow:none;}
+  .secondary-btn{
+    width:100%;border:1px solid #cfe0ee;border-radius:11px;padding:11px 14px;font-size:13.5px;font-weight:800;
+    color:#1d4d72;background:#fff;cursor:pointer;transition:.15s;margin-top:8px;
+  }
+  .secondary-btn:hover{background:#f4faff;border-color:#a9d3ee;}
+  .secondary-btn:disabled{opacity:.38;cursor:not-allowed;}
+
+  .gear-stack{display:grid;gap:8px;margin-top:10px;}
+  .gear-action{
+    border:1px solid #d8c37a;border-radius:11px;padding:11px 12px;font-size:13.5px;font-weight:800;
+    color:#4a3500;background:linear-gradient(160deg,#fff2a8,#f2c211);cursor:pointer;transition:.15s;
+    box-shadow:0 4px 0 #b58a04;
+  }
+  .gear-action:hover{filter:brightness(1.03);}
+  .gear-action:active{transform:translateY(2px);box-shadow:0 2px 0 #b58a04;}
+  .gear-action.two{background:linear-gradient(160deg,#ffe0a0,#e8a51c);border-color:#d5a24d;color:#4a3000;}
+  .gear-action.zero{background:#fff;border-color:#cfe0ee;color:#365a75;box-shadow:none;font-weight:700;}
+  .gear-action:disabled{opacity:.34;cursor:not-allowed;box-shadow:none;filter:grayscale(.35);}
+  .gear-meter{display:flex;gap:6px;margin-top:10px;}
+  .gear-meter span{flex:1;text-align:center;font-size:10.5px;font-weight:800;padding:4px 0;border-radius:7px;background:#f1f6fa;color:#9aafbe;border:1px solid #e4edf4;}
+  .gear-meter span.on{background:#fff6d6;color:#7a5a00;border-color:#e6cf85;}
+
+  .vol-readout{font-family:Consolas,monospace;font-size:38px;font-weight:800;color:#0d3f66;line-height:1;letter-spacing:-.02em;margin:8px 0 2px;}
+  .vol-readout span{font-size:13px;color:#7d95aa;font-family:inherit;font-weight:600;margin-left:4px;}
+  .vol-target{font-size:12px;color:var(--green);font-weight:800;margin-bottom:10px;}
+  .nudge-row{display:flex;gap:8px;margin:10px 0 2px;}
+  .nudge-row button{flex:1;border:1px solid #cfe0ee;background:#fff;border-radius:9px;padding:8px 0;font-size:13px;font-weight:800;color:#1d4d72;cursor:pointer;}
+  .nudge-row button:hover{background:#f4faff;border-color:#a9d3ee;}
+
+  .tilt-wrap{display:flex;align-items:center;gap:9px;margin:8px 0 4px;}
+  .tilt-wrap input[type=range]{flex:1;accent-color:#1a7ec4;}
+  .tilt-val{font-size:13px;font-weight:800;color:#2a5578;min-width:44px;text-align:right;font-variant-numeric:tabular-nums;}
+  .tilt-sub{font-size:11px;color:#8aa2b6;margin-bottom:2px;}
+
+  .substeps{display:flex;gap:6px;margin:10px 0 2px;}
+  .substeps span{flex:1;text-align:center;font-size:10.5px;font-weight:800;padding:5px 0;border-radius:7px;background:#f1f6fa;color:#9aafbe;border:1px solid #e4edf4;}
+  .substeps span.on{background:#eaf5ff;color:#0f5c9c;border-color:#c4e0f4;}
+
+  .kbd-note{font-size:11px;color:#8aa2b6;margin-top:10px;line-height:1.6;}
+
+  /* ---------- 完成弹层 ---------- */
+  .overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:rgba(10,28,44,.46);backdrop-filter:blur(5px);padding:20px;}
+  .complete-card{
+    width:min(430px,100%);background:#fff;border:1px solid #d7e6f1;border-radius:24px;padding:30px 28px 24px;
+    text-align:center;box-shadow:0 30px 80px rgba(8,30,48,.30);animation:pop .28s ease both;
+  }
+  @keyframes pop{from{opacity:0;transform:scale(.94) translateY(8px)}to{opacity:1;transform:none}}
+  .complete-check{
+    width:64px;height:64px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;
+    background:linear-gradient(160deg,#e9fbf1,#c9f0dd);color:#15805a;font-size:34px;font-weight:900;
+    border:1px solid #bfe3cf;
+  }
+  .complete-card h2{font-size:23px;margin:0 0 6px;letter-spacing:-.01em;}
+  .complete-card p{font-size:13px;color:#5f7a90;margin:0 0 18px;line-height:1.65;}
+  .complete-card .primary-btn{max-width:260px;margin:0 auto;}
+  .auto-note{font-size:10.5px;color:#9aafbe;margin-top:10px;}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);z-index:120;
+    background:rgba(8,26,40,.94);color:#eaf6ff;font-size:12.5px;line-height:1.5;padding:9px 15px;border-radius:10px;
+    border:1px solid #2f5a7a;opacity:0;pointer-events:none;transition:.22s;max-width:86vw;text-align:center;
+  }
+  .toast.on{opacity:1;transform:translate(-50%,0);}
+
+  @media (max-width:640px){
+    .app{padding:14px 12px 24px;}
+    .map-hero{padding:20px;flex-direction:column;align-items:stretch;}
+    .map-hero h1{font-size:30px;}
+    .progress-box{min-width:0;}
+    .level-head h2{font-size:22px;}
+    .level-head-main{width:100%;}
+    .dots{margin-left:0;}
+    .guide-card{padding:15px;}
+    .stage-wrap{aspect-ratio:1/1;}
+    .control-card{padding:14px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= 关卡地图 ================= -->
+  <section id="mapView" class="view">
+    <header class="map-hero">
+      <div>
+        <p class="eyebrow">PIPETTE TRAINING · 7 LEVELS</p>
+        <h1>移液器闯关</h1>
+        <p class="sub">每一关只练一个动作。做完本关就回到这里，下一关自动解锁。七关走完，就是一次完整的 150.0 µL 移液。</p>
+      </div>
+      <div class="progress-box">
+        <div class="progress-top">
+          <div class="progress-num"><span id="clearedCount">0</span><span>/ 7</span></div>
+          <div class="status" id="progressBadge">准备开始</div>
+        </div>
+        <div class="progress-bar"><div id="progressFill"></div></div>
+        <div class="progress-label" id="progressLabel">从第 1 关开始</div>
+      </div>
+    </header>
+
+    <div id="allClear" class="all-clear hidden">
+      <span style="font-size:22px">🎉</span>
+      <div><b>七关全部通关</b><br><span>你已经走完装吸头 → 调体积 → 预润洗 → 吸液 → 排液 → 退吸头 → 收尾。</span></div>
+    </div>
+
+    <div id="levelGrid" class="level-grid" aria-label="七关地图"></div>
+
+    <footer class="map-foot">
+      <span>每关只显示本关需要的模型、操作和指引；完成后自动回到这张地图。</span>
+      <button id="resetProgress" class="link-btn" type="button">重置进度</button>
+    </footer>
+  </section>
+
+  <!-- ================= 单关页面 ================= -->
+  <section id="levelView" class="view hidden">
+    <header class="level-head">
+      <button id="backBtn" class="ghost-btn" type="button">← 返回关卡地图</button>
+      <div class="level-head-main">
+        <span class="level-kicker">LEVEL <span id="levelNum">1</span> / 7</span>
+        <h2 id="levelTitle">装吸头</h2>
+      </div>
+      <div class="dots" id="levelDots" aria-label="关卡进度"></div>
+    </header>
+
+    <div class="level-layout">
+      <aside class="panel guide-card" id="guideCard"></aside>
+
+      <main class="panel stage-card">
+        <div class="stage-top">
+          <span class="stage-badge">本关只练这一步</span>
+          <span class="stage-setup" id="stageSetup"></span>
+        </div>
+        <div class="stage-wrap">
+          <svg id="stageSvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet" aria-label="本关操作场景"></svg>
+          <div class="stage-hint" id="stageHint"></div>
+        </div>
+        <div class="hud" id="hud"></div>
+      </main>
+
+      <aside class="panel control-card">
+        <div id="controlCard"></div>
+        <div class="inline-error hidden" id="inlineError"></div>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="overlay hidden" id="completeOverlay">
+  <div class="complete-card">
+    <div class="complete-check">✓</div>
+    <h2 id="completeTitle">第 1 关完成</h2>
+    <p id="completeMsg"></p>
+    <button id="completeBack" class="primary-btn" type="button">返回主页面</button>
+    <div class="auto-note">1.6 秒后自动返回关卡地图</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   移液器闯关 · 7 关
+   - 主页面：7 关地图，顺序解锁
+   - 每关：只显示本关的模型、操作和指引
+   - 通关：自动回地图，解锁下一关
+   - 单文件、零依赖、file:// 直接打开
+   ============================================================ */
+
+const $ = s => document.querySelector(s);
+const K = 302 / 1033;            // 抠图总高 1033 -> 302 场景单位
+const PX_PER_MM = 3.6;
+
+const BOX   = { x0: 92, x1: 232, y: 372 };
+const SRC   = { cx: 350, w: 46, mouth: 330, bottom: 470 };
+const DST   = { cx: 646, w: 46, mouth: 330, bottom: 470 };
+const WASTE = { x0: 818, x1: 922, y: 320 };
+const HOME  = { x0: 640, x1: 820, y0: 300, y1: 468 };
+
+const LEVELS = [
+  {
+    n: 1, key: "tip", title: "装吸头", tag: "TIP",
+    desc: "把吸头装到枪上，并轻压确认密合。",
+    setup: "本关起点：空枪 · 吸头盒",
+    goal: "给移液器装一个密封的吸头。",
+    action: "把吸头尖端移到盒口高亮处 → 点“压入吸头” → 点“轻压确认密合”。",
+    success: "吸头已装，且密合确认完成。",
+    mistake: "离盒口太远 / 只压入没确认。",
+    why: "吸头不密封，吸液会漏气、体积会偏小。"
+  },
+  {
+    n: 2, key: "vol", title: "调体积", tag: "VOL",
+    desc: "把体积设定到 150.0 µL。",
+    setup: "本关起点：当前体积 200.0 µL",
+    goal: "把体积设定到 150.0 µL。",
+    action: "上下拖黄色体积环；向上增大、向下减小。",
+    success: "读数稳定在 150.0 µL。",
+    mistake: "拖过头 / 没到 150.0 / 到 150 后又改大。",
+    why: "体积设定错，后面吸多少、打多少都会错。"
+  },
+  {
+    n: 3, key: "rinse", title: "预润洗", tag: "RINSE",
+    desc: "吸一次，再打回原管，完成 1 次预润洗。",
+    setup: "本关起点：吸头已装 · 体积 150.0 µL · 21 管 900 µL",
+    goal: "预润洗 1 次：吸一次，再打回原管。",
+    action: "① 液面上方点“按下一档” → 入液 2–5 mm → 点“松手复位”吸液；② 在液面下再点“按下一档”回打。",
+    success: "液体回到 21 管，吸头内为空，润洗 1/1。",
+    mistake: "先入液后按一档 / 空吸头按 / 打到别处。",
+    why: "让吸头内壁先被液体饱和，减少吸附误差。"
+  },
+  {
+    n: 4, key: "asp", title: "吸液", tag: "ASP",
+    desc: "从 21「上」吸 150.0 µL，深度 2–5 mm。",
+    setup: "本关起点：吸头已装 · 体积 150.0 µL · 21 管 900 µL",
+    goal: "从 21「上」管吸 150.0 µL。",
+    action: "液面上方先点“按下一档” → 慢慢入液到绿色深度带 → 点“松手复位”。",
+    success: "吸到 150.0 µL，深度 2–5 mm，离壁 ≥5 px。",
+    mistake: "入液后再按一档 / 太浅 / 太深 / 贴壁。",
+    why: "深度和离壁决定是否吸空、外壁是否沾液。"
+  },
+  {
+    n: 5, key: "disp", title: "排液", tag: "DISP",
+    desc: "贴壁 30°，把 150.0 µL 打进 PCR 5。",
+    setup: "本关起点：吸头内 150.0 µL · PCR 5 空管",
+    goal: "贴壁 30°，把 150.0 µL 打进 PCR 5。",
+    action: "吸头靠右壁 → 调到 30° → 点“按下一档”排液 → 点“按到二档”吹出 → 点“松手复位”。",
+    success: "目标管 150.0 µL，吸头内 0 µL。",
+    mistake: "没贴壁 / 角度不对 / 一档就松手 / 悬空吹 / 直接二档。",
+    why: "贴壁 + 二档减少挂壁和残留；松手后擦拭两下；真实实验还要给 PCR 6 配平管加等体积。"
+  },
+  {
+    n: 6, key: "eject", title: "退吸头", tag: "EJECT",
+    desc: "把空吸头移到废液桶上方退掉。",
+    setup: "本关起点：吸头已空",
+    goal: "把空吸头退进废液桶。",
+    action: "把吸头移到桶口上方 → 点“退吸头”。",
+    success: "吸头落入桶内，且吸头内为空。",
+    mistake: "没对准桶口 / 吸头还有液体 / 已经没有吸头。",
+    why: "防止带液退头污染台面或样品。"
+  },
+  {
+    n: 7, key: "home", title: "收尾", tag: "HOME",
+    desc: "把移液器放回右侧归位区，结束本轮。",
+    setup: "本关起点：吸头已脱 · 枪在台面中央",
+    goal: "把移液器归位，结束本轮。",
+    action: "把枪移到右侧归位区 → 点“确认归位”。",
+    success: "吸头已脱、枪在归位区、七关全绿。",
+    mistake: "还停在废液桶上 / 吸头没退 / 提前收尾。",
+    why: "归位避免污染、跌落和下次拿错。"
+  }
+];
+
+/* ---------------- 进度存储 ---------------- */
+const STORE_KEY = "pipette-trainer-7levels-v1";
+let progress = loadProgress();
+let session = null;
+let currentLevel = null;
+let completeTimer = null;
+let lastComplete = null;   // { n, wasReplay }
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return { cleared: [] };
+    const p = JSON.parse(raw);
+    return { cleared: normalizeCleared(Array.isArray(p.cleared) ? p.cleared : []) };
+  } catch (e) {
+    return { cleared: [] };
+  }
+}
+function normalizeCleared(arr) {
+  const out = [];
+  for (let n = 1; n <= 7; n++) {
+    if (arr.includes(n)) out.push(n);
+    else break;
+  }
+  return out;
+}
+function saveProgress() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(progress)); } catch (e) {}
+}
+function maxUnlocked() {
+  return Math.min(7, progress.cleared.length + 1);
+}
+function isCleared(n) { return progress.cleared.includes(n); }
+function isUnlocked(n) { return n <= maxUnlocked(); }
+
+/* ---------------- 图片预加载 / 矢量回退 ---------------- */
+let PHOTO_OK = false;
+const pipReady = Promise.all([
+  "assets/pip-cap.png",
+  "assets/pip-collar.png",
+  "assets/pip-body.png"
+].map(src => new Promise(resolve => {
+  const img = new Image();
+  img.onload = () => resolve(true);
+  img.onerror = () => resolve(false);
+  img.src = src;
+}))).then(results => {
+  PHOTO_OK = results.every(Boolean);
+  return PHOTO_OK;
+});
+
+/* ---------------- 小工具 ---------------- */
+function surfaceY(t, vol) {
+  const usable = t.bottom - t.mouth - 24;
+  return t.bottom - Math.max(0.02, vol / 1000) * usable;
+}
+function depthMM(t, y, vol) {
+  return (y - surfaceY(t, vol)) / PX_PER_MM;
+}
+function wallDist(t, x) {
+  return Math.min(x - (t.cx - t.w / 2), (t.cx + t.w / 2) - x);
+}
+function inTube(t, x, y) {
+  return x > t.cx - t.w / 2 + 2 && x < t.cx + t.w / 2 - 2 && y > t.mouth && y < t.bottom;
+}
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+function setError(msg) {
+  const el = $("#inlineError");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove("hidden");
+}
+function clearError() {
+  const el = $("#inlineError");
+  if (el) el.classList.add("hidden");
+}
+let hintTimer = null;
+function stageHint(msg) {
+  const el = $("#stageHint");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("on");
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => el.classList.remove("on"), 3200);
+}
+let toastTimer = null;
+function showToast(msg) {
+  const el = $("#toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("on"), 2800);
+}
+
+/* ---------------- 地图 ---------------- */
+function renderMap(justCleared) {
+  const max = maxUnlocked();
+  const clearedCount = progress.cleared.length;
+  const all = clearedCount === 7;
+
+  $("#clearedCount").textContent = clearedCount;
+  $("#progressFill").style.width = (clearedCount / 7 * 100) + "%";
+  $("#progressBadge").textContent = all ? "全部通关" : clearedCount ? "进行中" : "准备开始";
+  $("#progressBadge").style.cssText = all
+    ? "background:#e9f8f1;border-color:#c4e8d7;color:#14664b;"
+    : "";
+  $("#progressLabel").textContent = all
+    ? "七关已完成，可以随时重玩任意一关。"
+    : `下一关：第 ${max} 关 · ${LEVELS[max - 1].title}`;
+  $("#allClear").classList.toggle("hidden", !all);
+
+  $("#levelGrid").innerHTML = LEVELS.map(L => {
+    const cleared = isCleared(L.n);
+    const unlocked = isUnlocked(L.n);
+    const current = !cleared && L.n === max;
+    const cls = ["level-card", cleared ? "cleared" : "", unlocked ? "unlocked" : "locked", current ? "current" : ""].join(" ");
+    const status = cleared ? "已通关" : current ? "开始挑战" : unlocked ? "可挑战" : "未解锁";
+    const foot = cleared ? "✓ 完成" : unlocked ? (current ? "进入 →" : "进入 →") : "🔒 锁定";
+    return `<article class="${cls}" data-level="${L.n}" ${unlocked ? 'tabindex="0" role="button"' : 'aria-disabled="true"'}>
+      <div class="card-top"><span class="num">STEP ${String(L.n).padStart(2, "0")}</span><span class="status">${status}</span></div>
+      <h3>${L.title}</h3>
+      <p>${L.desc}</p>
+      <div class="card-foot"><span>${L.tag}</span><span class="go">${foot}</span></div>
+    </article>`;
+  }).join("");
+
+  if (justCleared) {
+    if (all) showToast("七关全部通关 🎉");
+    else if (lastComplete && lastComplete.wasReplay) showToast(`第 ${justCleared} 关复习完成`);
+    else showToast(`第 ${justCleared} 关完成，第 ${justCleared + 1} 关已解锁`);
+  }
+}
+
+$("#levelGrid").addEventListener("click", e => {
+  const card = e.target.closest(".level-card");
+  if (!card) return;
+  const n = Number(card.dataset.level);
+  if (!isUnlocked(n)) {
+    showToast(`先完成第 ${n - 1} 关，才能挑战这一关`);
+    return;
+  }
+  startLevel(n);
+});
+$("#levelGrid").addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const card = e.target.closest(".level-card");
+  if (!card) return;
+  e.preventDefault();
+  const n = Number(card.dataset.level);
+  if (isUnlocked(n)) startLevel(n);
+});
+
+$("#resetProgress").addEventListener("click", () => {
+  if (!confirm("确定清空七关进度？")) return;
+  progress = { cleared: [] };
+  saveProgress();
+  renderMap();
+  showToast("进度已重置，从第 1 关开始");
+});
+
+/* ---------------- 关卡切换 ---------------- */
+async function startLevel(n) {
+  if (!isUnlocked(n)) return;
+  await pipReady;
+  currentLevel = n;
+  session = createSession(n);
+  $("#mapView").classList.add("hidden");
+  $("#levelView").classList.remove("hidden");
+  $("#completeOverlay").classList.add("hidden");
+  $("#toast").classList.remove("on");
+  $("#stageHint").classList.remove("on");
+  $("#levelNum").textContent = n;
+  $("#levelTitle").textContent = LEVELS[n - 1].title;
+  $("#stageSetup").textContent = LEVELS[n - 1].setup;
+  renderDots();
+  renderGuide(n);
+  renderControls(n);
+  renderStage(n);
+  clearError();
+  updateAll();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderDots() {
+  $("#levelDots").innerHTML = LEVELS.map(L => {
+    const cls = L.n === currentLevel ? "current" : isCleared(L.n) ? "done" : "";
+    return `<span class="${cls}" title="第 ${L.n} 关 ${L.title}"></span>`;
+  }).join("");
+}
+
+function renderGuide(n) {
+  const L = LEVELS[n - 1];
+  $("#guideCard").innerHTML = `
+    <div class="guide-setup">${L.setup}</div>
+    <p class="guide-goal">${L.goal}</p>
+    <div class="guide-row"><span class="label">只做这一件事</span><p>${L.action}</p></div>
+    <div class="guide-row"><span class="label">成功条件</span><p>${L.success}</p></div>
+    <div class="guide-row mistake"><span class="label">常见错误</span><p>${L.mistake}</p></div>
+    <div class="guide-row why"><span class="label">为什么</span><p>${L.why}</p></div>
+  `;
+}
+
+/* ---------------- 每关初始状态 ---------------- */
+function createSession(n) {
+  const s = {
+    n, x: 0, y: 0, scale: 0.55, tilt: 0, gear: 0,
+    tip: false, tipOk: false, tipVol: 0,
+    vol: 200, srcVol: 900, dstVol: 0,
+    rinsed: 0, rinseStep: 0, armed: false,
+    stage1: false, stage2: false, done: false
+  };
+  if (n === 1) { s.x = 174; s.y = 300; s.scale = 0.60; }
+  if (n === 2) { s.vol = 200; }
+  if (n === 3) { s.x = 350; s.y = 340; s.tip = true; s.vol = 150; s.tipVol = 0; s.srcVol = 900; }
+  if (n === 4) { s.x = 350; s.y = 340; s.tip = true; s.vol = 150; s.tipVol = 0; s.srcVol = 900; }
+  if (n === 5) { s.x = 646; s.y = 340; s.tip = true; s.tipVol = 150; s.dstVol = 0; }
+  if (n === 6) { s.x = 760; s.y = 300; s.tip = true; s.tipVol = 0; }
+  if (n === 7) { s.x = 500; s.y = 350; s.tip = false; }
+  return s;
+}
+
+/* ---------------- 通用模型 ---------------- */
+function sceneDefs() {
+  return `<defs>
+    <linearGradient id="gGlass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset=".28" stop-color="#e4eef6" stop-opacity=".55"/>
+      <stop offset=".72" stop-color="#c3d7e7" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#a6c0d6" stop-opacity=".85"/>
+    </linearGradient>
+    <linearGradient id="gWater" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#93dff6"/><stop offset="1" stop-color="#2f9ecb"/>
+    </linearGradient>
+    <linearGradient id="gWater2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9e7a1"/><stop offset="1" stop-color="#3fa35a"/>
+    </linearGradient>
+    <linearGradient id="gTipFill" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#cfe0ec"/><stop offset=".28" stop-color="#ffffff"/>
+      <stop offset=".62" stop-color="#f2f8fc"/><stop offset="1" stop-color="#bcd2e1"/>
+    </linearGradient>
+    <linearGradient id="gYellow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f8d442"/><stop offset=".5" stop-color="#f2c211"/><stop offset="1" stop-color="#c79a06"/>
+    </linearGradient>
+    <linearGradient id="gBox" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbfd"/><stop offset="1" stop-color="#ccd8e4"/>
+    </linearGradient>
+    <linearGradient id="gDeck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e2eaf2"/><stop offset=".1" stop-color="#f3f7fa"/><stop offset="1" stop-color="#dce6ee"/>
+    </linearGradient>
+  </defs>`;
+}
+
+function background(w, h, deckY) {
+  return `<rect width="${w}" height="${h}" fill="#eef3f7"/>
+    <g stroke="#d4e0ea" stroke-width="1" opacity=".45">
+      <path d="M0 118 H${w} M0 238 H${w} M0 358 H${w}"/>
+      <path d="M150 0 V${h} M420 0 V${h} M700 0 V${h} M880 0 V${h}"/>
+    </g>
+    <rect y="${deckY}" width="${w}" height="${h - deckY}" fill="url(#gDeck)"/>
+    <path d="M0 ${deckY} H${w}" stroke="#bfcdd9" stroke-width="1.5"/>`;
+}
+
+function pipetteMarkup() {
+  return `<g id="pip" style="cursor:grab">
+    <g id="photoPip" transform="translate(0,-368) scale(${K}) translate(-148,0)" style="display:${PHOTO_OK ? "" : "none"}">
+      <image id="capImg" href="assets/pip-cap.png" x="0" y="0" width="296" height="124"/>
+      <image id="collarImg" href="assets/pip-collar.png" x="0" y="67" width="296" height="57"/>
+      <image id="bodyImg" href="assets/pip-body.png" x="0" y="124" width="296" height="909"/>
+    </g>
+    <g id="vecPip" style="display:${PHOTO_OK ? "none" : ""}">
+      <rect x="-10" y="-300" width="20" height="234" rx="8" fill="#e9eff5" stroke="#9fb0c0" stroke-width="1.2"/>
+      <rect x="-21" y="-282" width="42" height="60" rx="8" fill="#f7fafc" stroke="#9fb0c0" stroke-width="1.2"/>
+      <rect x="-22" y="-292" width="44" height="18" rx="5" fill="url(#gYellow)" stroke="#b98d05" stroke-width="1"/>
+      <g id="vecCap">
+        <rect x="-12" y="-342" width="24" height="30" rx="8" fill="url(#gYellow)" stroke="#b98d05" stroke-width="1"/>
+        <rect x="-8" y="-336" width="16" height="7" rx="3" fill="#fff3b8" opacity=".85"/>
+      </g>
+      <rect x="-10" y="-66" width="20" height="18" rx="4" fill="#d5dee7" stroke="#9fb0c0" stroke-width="1"/>
+    </g>
+    <g id="gTip" style="display:none">
+      <path d="M0 0 L-6.2 -58 L-5.6 -66 L5.6 -66 L6.2 -58 Z" fill="url(#gTipFill)" stroke="#7fa0ba" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M2.8 -60 L1.3 -5" stroke="#ffffff" stroke-width="1.6" opacity=".85" stroke-linecap="round"/>
+      <rect id="tipLiq" x="-4.6" y="-6" width="9.2" height="0" fill="url(#gWater)" opacity=".92"/>
+    </g>
+    <rect id="pipHit" x="-42" y="-370" width="84" height="310" fill="transparent" pointer-events="all"/>
+  </g>`;
+}
+
+function tubeMarkup(t, vol, label) {
+  const sy = surfaceY(t, vol);
+  const bottomY = t === DST ? 468 : 436;
+  const taper = t === DST ? 16 : 34;
+  const liq = sy < bottomY
+    ? `M${t.cx - 22} ${sy.toFixed(1)} h44 v${(bottomY - sy).toFixed(1)} l-22 ${taper} -22 -${taper} z`
+    : "";
+  return `<g>
+    <ellipse cx="${t.cx}" cy="${t.bottom + 12}" rx="33" ry="9" fill="#1d3a52" opacity=".13"/>
+    <path d="M${t.cx - 24} ${t.mouth} h48 v94 l-24 34 -24 -34 z" fill="url(#gGlass)" stroke="#9db8cc" stroke-width="1.4"/>
+    <path class="liq" d="${liq}" fill="url(#gWater)"/>
+    <rect x="${t.cx - 24}" y="${t.mouth}" width="48" height="7" rx="3" fill="#dce8f2" stroke="#a9c1d3"/>
+    <rect x="${t.cx - 26}" y="${t.mouth - 6}" width="52" height="8" rx="4" fill="#eef4f9" stroke="#a9c1d3"/>
+    <rect x="${t.cx - 20}" y="${t.mouth + 22}" width="40" height="17" rx="2" fill="#ffffff" opacity=".72"/>
+    <text x="${t.cx - 28}" y="${t.mouth + 20}" font-size="8" fill="#5d7c94" text-anchor="end" font-family="Segoe UI">${label}</text>
+  </g>`;
+}
+
+function tipBoxMarkup() {
+  return `<g id="tipbox">
+    <ellipse cx="162" cy="482" rx="104" ry="13" fill="#1d3a52" opacity=".13"/>
+    <rect x="70" y="392" width="184" height="86" rx="6" fill="url(#gBox)" stroke="#aebecd" stroke-width="1.6"/>
+    <rect x="80" y="402" width="164" height="64" rx="4" fill="#e8eff6" stroke="#c3d2df"/>
+    <g>${Array.from({ length: 18 }).map((_, i) => {
+      const c = i % 6, r = Math.floor(i / 6);
+      const x = 96 + c * 26, y = 414 + r * 19;
+      const hl = (c === 3 && r === 0);
+      return `<path d="M${x - 4} ${y} L${x - 2.4} ${y - 20} h4.8 L${x + 4} ${y} Z" fill="${hl ? "#fff1a8" : "#eaf3fa"}" stroke="${hl ? "#d9a400" : "#a8c1d4"}" stroke-width="${hl ? 1.8 : .9}"/>
+        <rect x="${x - 3}" y="${y - 24}" width="6" height="5" rx="1" fill="${hl ? "#f2c211" : "#dbe7f1"}" stroke="${hl ? "#b98d05" : "#a8c1d4"}" stroke-width=".7"/>`;
+    }).join("")}</g>
+    <rect x="70" y="384" width="184" height="12" rx="3" fill="#dbe5ee" stroke="#b6c6d5"/>
+    <text x="162" y="496" font-size="9" fill="#8ba1b4" text-anchor="middle" font-family="Segoe UI">200 µL TIPS</text>
+    <g id="boxHighlight">
+      <rect x="152" y="344" width="44" height="46" rx="12" fill="none" stroke="#1f9e74" stroke-width="2.2" stroke-dasharray="5 4" opacity=".75"/>
+      <text x="174" y="336" font-size="10" fill="#15805a" text-anchor="middle" font-weight="700">盒口 · 对准这里</text>
+    </g>
+  </g>`;
+}
+
+function wasteMarkup() {
+  return `<g id="waste">
+    <ellipse cx="870" cy="484" rx="78" ry="12" fill="#1d3a52" opacity=".12"/>
+    <path d="M806 342 h128 l-8 138 h-112 z" fill="url(#gGlass)" stroke="#9db8cc" stroke-width="1.6"/>
+    <path d="M812 442 h116 l-4 38 h-108 z" fill="#c9dbe8" opacity=".6"/>
+    <rect x="802" y="330" width="136" height="15" rx="5" fill="#e6eef6" stroke="#a9c1d3"/>
+    <rect x="844" y="334" width="52" height="8" rx="4" fill="#22384a" opacity=".5"/>
+    <text x="870" y="468" font-size="9" fill="#7f97ab" text-anchor="middle" font-family="Segoe UI">WASTE</text>
+    <rect id="wasteHit" x="808" y="260" width="124" height="130" rx="16" fill="none" stroke="#1f9e74" stroke-width="2.2" stroke-dasharray="6 5" opacity=".0"/>
+    <text x="870" y="300" font-size="10" fill="#15805a" text-anchor="middle" font-weight="700">桶口 · 对准这里</text>
+  </g>`;
+}
+
+function homeMarkup() {
+  return `<g id="home">
+    <ellipse cx="730" cy="490" rx="120" ry="13" fill="#1d3a52" opacity=".10"/>
+    <rect x="640" y="430" width="180" height="38" rx="10" fill="#e8eff6" stroke="#b6c6d5" stroke-width="1.4"/>
+    <rect x="654" y="350" width="12" height="84" rx="6" fill="#cfdbe6" stroke="#a9bccd" stroke-width="1.2"/>
+    <rect x="794" y="350" width="12" height="84" rx="6" fill="#cfdbe6" stroke="#a9bccd" stroke-width="1.2"/>
+    <rect x="636" y="300" width="188" height="168" rx="16" fill="rgba(31,158,116,.06)" stroke="#1f9e74" stroke-width="2.2" stroke-dasharray="7 6"/>
+    <text x="636" y="286" font-size="12" fill="#15805a" text-anchor="start" font-weight="800">归位区</text>
+  </g>`;
+}
+
+function sourceGuides(showWall) {
+  const vol = session ? session.srcVol : 900;
+  const sy = surfaceY(SRC, vol);
+  const y2 = sy + 2 * PX_PER_MM, y5 = sy + 5 * PX_PER_MM;
+  const ticks = [0, 1, 2, 3, 4, 5].map(mm => {
+    const y = sy + mm * PX_PER_MM;
+    const major = mm === 2 || mm === 5;
+    return `<line x1="382" x2="${major ? 398 : 390}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#8aa2b6" stroke-width="1"/>
+      ${major ? `<text x="402" y="${(y + 3.5).toFixed(1)}" font-size="8" fill="#7d95aa">${mm}</text>` : ""}`;
+  }).join("");
+  return `<g id="depthGuide">
+    <rect x="382" y="${y2.toFixed(1)}" width="30" height="${(y5 - y2).toFixed(1)}" fill="rgba(31,158,116,.16)" stroke="#1f9e74" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="382" x2="382" y1="${sy.toFixed(1)}" y2="${(sy + 5 * PX_PER_MM).toFixed(1)}" stroke="#8aa2b6" stroke-width="1"/>
+    ${ticks}
+    ${showWall ? `<g id="wallGuide">
+      <rect x="${SRC.cx - 23}" y="${SRC.mouth + 8}" width="6" height="${SRC.bottom - SRC.mouth - 16}" fill="rgba(178,58,46,.10)" stroke="#b23a2e" stroke-width=".8" stroke-dasharray="2 3"/>
+      <rect x="${SRC.cx + 17}" y="${SRC.mouth + 8}" width="6" height="${SRC.bottom - SRC.mouth - 16}" fill="rgba(178,58,46,.10)" stroke="#b23a2e" stroke-width=".8" stroke-dasharray="2 3"/>
+    </g>` : ""}
+  </g>`;
+}
+
+function angleGauge() {
+  return `<g id="angleGauge" transform="translate(566,190)">
+    <path d="M0 0 L0 -70 A70 70 0 0 1 49.5 -49.5 Z" fill="rgba(31,158,116,.08)" stroke="#cfdae4" stroke-width="1"/>
+    <path d="M0 -70 A70 70 0 0 1 49.5 -49.5" fill="none" stroke="#1f9e74" stroke-width="2.4" stroke-dasharray="4 4" opacity=".55"/>
+    <line id="angleNeedle" x1="0" y1="0" x2="0" y2="-64" stroke="#1a7ec4" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="5" fill="#1a7ec4"/>
+    <text x="-10" y="15" font-size="11" fill="#6d879c">0°</text>
+    <text x="48" y="-42" font-size="11" fill="#6d879c">45°</text>
+    <text x="27" y="-58" font-size="12" fill="#15805a" font-weight="800">30°</text>
+  </g>`;
+}
+
+/* ---------------- 关卡场景 ---------------- */
+function renderStage(n) {
+  const svg = $("#stageSvg");
+  if (n === 1) {
+    svg.setAttribute("viewBox", "40 60 300 440");
+    svg.innerHTML = sceneDefs() + background(400, 620, 470) + tipBoxMarkup() + pipetteMarkup();
+    bindDrag(n);
+  } else if (n === 2) {
+    svg.setAttribute("viewBox", "0 0 600 600");
+    svg.innerHTML = sceneDefs() + dialMarkup();
+    bindDial();
+  } else if (n === 3 || n === 4) {
+    svg.setAttribute("viewBox", "250 120 210 390");
+    svg.innerHTML = sceneDefs() + background(1000, 620, 470) +
+      tubeMarkup(SRC, session.srcVol, "21 上（放大）") + `<g id="depthGuideWrap">${sourceGuides(n === 4)}</g>` + pipetteMarkup();
+    bindDrag(n);
+    updateSourceVisuals();
+  } else if (n === 5) {
+    svg.setAttribute("viewBox", "540 100 280 400");
+    svg.innerHTML = sceneDefs() + background(1000, 620, 470) +
+      tubeMarkup(DST, session.dstVol, "PCR 5（放大）") +
+      `<rect id="dstWall" x="${DST.cx + 17}" y="${DST.mouth + 8}" width="6" height="${DST.bottom - DST.mouth - 16}" fill="rgba(31,158,116,0)" stroke="#1f9e74" stroke-width="1.2" stroke-dasharray="3 3"/>` +
+      angleGauge() + pipetteMarkup();
+    bindDrag(n);
+    updateTargetVisuals();
+  } else if (n === 6) {
+    svg.setAttribute("viewBox", "720 80 260 420");
+    svg.innerHTML = sceneDefs() + background(1000, 620, 470) + wasteMarkup() + pipetteMarkup();
+    bindDrag(n);
+    updateWasteVisuals();
+  } else if (n === 7) {
+    svg.setAttribute("viewBox", "400 100 560 400");
+    svg.innerHTML = sceneDefs() + background(1000, 620, 470) + homeMarkup() + pipetteMarkup();
+    bindDrag(n);
+    updateHomeVisuals();
+  }
+  updatePip();
+}
+
+/* ---------------- 体积表盘（第 2 关） ---------------- */
+function yForVol(v) {
+  return 470 - (clamp(v, 20, 200) - 20) / 180 * 280;
+}
+function dialMarkup() {
+  const ticks = [200, 180, 160, 140, 120, 100, 80, 60, 40, 20].map(v => {
+    const y = yForVol(v);
+    return `<line x1="410" x2="${v % 100 === 0 ? 430 : 422}" y1="${y}" y2="${y}" stroke="#9aafbe" stroke-width="1"/>
+      <text x="436" y="${y + 3.5}" font-size="9" fill="#7d95aa">${v}</text>`;
+  }).join("");
+  const ty = yForVol(150);
+  return `<rect width="600" height="600" fill="#eef4f9"/>
+    <rect x="170" y="70" width="260" height="480" rx="28" fill="#f9fcfe" stroke="#cfdeea" stroke-width="1.4"/>
+    <rect x="205" y="78" width="190" height="64" rx="13" fill="#0d1e2c" stroke="#38607e"/>
+    <text id="dialReadout" x="300" y="124" text-anchor="middle" font-size="38" font-family="Consolas,monospace" font-weight="700" fill="#7fe6ff">200.0</text>
+    <text x="300" y="154" text-anchor="middle" font-size="10" fill="#79a6c2">µL</text>
+    <line x1="185" x2="430" y1="${ty}" y2="${ty}" stroke="#1f9e74" stroke-width="1.6" stroke-dasharray="6 5"/>
+    <text x="438" y="${ty + 4}" font-size="10" fill="#15805a" font-weight="800">目标 150.0</text>
+    <g id="volRingSvg" transform="translate(300,${yForVol(200)})" style="cursor:ns-resize">
+      <rect x="-108" y="-22" width="216" height="44" rx="12" fill="url(#gYellow)" stroke="#b98d05" stroke-width="2"/>
+      <g stroke="#8f6c04" stroke-width="1.1" opacity=".5">
+        ${Array.from({ length: 11 }).map((_, i) => `<path d="M${-88 + i * 17.6} -14 v28"/>`).join("")}
+      </g>
+      <text x="0" y="5" text-anchor="middle" font-size="12" font-weight="800" fill="#5b4300">拖动我</text>
+    </g>
+    <g>${ticks}</g>
+    <text x="410" y="500" font-size="9" fill="#7d95aa">20–200 µL</text>
+  </g>`;
+}
+
+/* ---------------- 每关控件 ---------------- */
+function renderControls(n) {
+  const cc = $("#controlCard");
+  if (n === 1) {
+    cc.innerHTML = `
+      <h3 class="control-title">本关操作</h3>
+      <button id="attachBtn" class="primary-btn" type="button" disabled>压入吸头</button>
+      <button id="confirmBtn" class="secondary-btn hidden" type="button">轻压确认密合</button>
+      <div class="control-note">拖动枪身，把吸头尖端移到盒口高亮处。按钮只在盒口上方可用。</div>
+    `;
+    $("#attachBtn").addEventListener("click", attachTip);
+    $("#confirmBtn").addEventListener("click", confirmTip);
+  } else if (n === 2) {
+    cc.innerHTML = `
+      <h3 class="control-title">体积设定</h3>
+      <div class="vol-readout"><span id="volValue">200.0</span><span>µL</span></div>
+      <div class="vol-target">目标 150.0 µL</div>
+      <div class="nudge-row">
+        <button id="volMinus" type="button">− 1 µL</button>
+        <button id="volPlus" type="button">+ 1 µL</button>
+      </div>
+      <div class="control-note">按住黄色体积环上下拖；向上增大、向下减小。到 150.0 就完成。</div>
+    `;
+    $("#volMinus").addEventListener("click", () => setVolume(session.vol - 1));
+    $("#volPlus").addEventListener("click", () => setVolume(session.vol + 1));
+  } else if (n === 3) {
+    cc.innerHTML = `
+      <h3 class="control-title">润洗手势</h3>
+      <div class="substeps"><span id="sub1" class="on">1 吸液</span><span id="sub2">2 回打</span></div>
+      <div class="gear-stack">
+        <button id="gear1" class="gear-action" type="button">按下一档</button>
+        <button id="gear0" class="gear-action zero" type="button" disabled>松手复位</button>
+      </div>
+      <div class="gear-meter"><span data-g="0" class="on">复位</span><span data-g="1">一档</span></div>
+      <div class="control-note">① 液面上方点“按下一档”→ 入液 2–5 mm → 点“松手复位”吸液；<br>② 在液面下再点“按下一档”，把液体回打。</div>
+    `;
+    bindGearButtons();
+  } else if (n === 4) {
+    cc.innerHTML = `
+      <h3 class="control-title">吸液手势</h3>
+      <div class="gear-stack">
+        <button id="gear1" class="gear-action" type="button">按下一档</button>
+        <button id="gear0" class="gear-action zero" type="button" disabled>松手复位</button>
+      </div>
+      <div class="gear-meter"><span data-g="0" class="on">复位</span><span data-g="1">一档</span></div>
+      <div class="control-note">液面上方先点“按下一档”；把吸头移进绿色深度带（2–5 mm），再点“松手复位”。</div>
+    `;
+    bindGearButtons();
+  } else if (n === 5) {
+    cc.innerHTML = `
+      <h3 class="control-title">排液手势</h3>
+      <div class="tilt-sub">倾角 · 目标 30°（12–45°）</div>
+      <div class="tilt-wrap">
+        <input id="tiltRange" type="range" min="0" max="45" step="1" value="0" aria-label="倾角">
+        <span class="tilt-val" id="tiltValue">0°</span>
+      </div>
+      <div class="gear-stack">
+        <button id="gear1" class="gear-action" type="button">按下一档</button>
+        <button id="gear2" class="gear-action two" type="button" disabled>按到二档</button>
+        <button id="gear0" class="gear-action zero" type="button" disabled>松手复位</button>
+      </div>
+      <div class="gear-meter"><span data-g="0" class="on">复位</span><span data-g="1">一档</span><span data-g="2">二档</span></div>
+      <div class="control-note">先把吸头靠到右壁、倾角调到 30°，再按顺序：一档 → 二档 → 松手。</div>
+    `;
+    $("#tiltRange").addEventListener("input", e => setTilt(Number(e.target.value)));
+    bindGearButtons();
+  } else if (n === 6) {
+    cc.innerHTML = `
+      <h3 class="control-title">退吸头</h3>
+      <button id="ejectBtn" class="primary-btn" type="button" disabled>退吸头</button>
+      <div class="control-note">把吸头移到废液桶口上方；吸头必须是空的，按钮才会亮。</div>
+      <div class="kbd-note">提示：本关起点吸头已排空。</div>
+    `;
+    $("#ejectBtn").addEventListener("click", tryEject);
+  } else if (n === 7) {
+    cc.innerHTML = `
+      <h3 class="control-title">收尾</h3>
+      <button id="homeBtn" class="primary-btn" type="button" disabled>确认归位</button>
+      <div class="control-note">把移液器拖到右侧绿色归位区，然后点“确认归位”。</div>
+    `;
+    $("#homeBtn").addEventListener("click", confirmHome);
+  }
+}
+
+function bindGearButtons() {
+  const g1 = $("#gear1"), g2 = $("#gear2"), g0 = $("#gear0");
+  if (g1) g1.addEventListener("click", () => setGear(1));
+  if (g2) g2.addEventListener("click", () => setGear(2));
+  if (g0) g0.addEventListener("click", () => setGear(0));
+}
+
+/* ---------------- 拖动 ---------------- */
+function bindDrag(n) {
+  const svg = $("#stageSvg");
+  const pip = $("#pip");
+  if (!pip) return;
+  let grab = null;
+  const toScene = (clientX, clientY) => {
+    const p = svg.createSVGPoint();
+    p.x = clientX; p.y = clientY;
+    return p.matrixTransform(svg.getScreenCTM().inverse());
+  };
+  pip.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    const p = toScene(e.clientX, e.clientY);
+    grab = { dx: session.x - p.x, dy: session.y - p.y };
+    try { pip.setPointerCapture(e.pointerId); } catch (err) {}
+    pip.style.cursor = "grabbing";
+  });
+  pip.addEventListener("pointermove", e => {
+    if (!grab) return;
+    const p = toScene(e.clientX, e.clientY);
+    moveTo(p.x + grab.dx, p.y + grab.dy);
+  });
+  const up = e => {
+    if (!grab) return;
+    grab = null;
+    pip.style.cursor = "grab";
+    try { pip.releasePointerCapture(e.pointerId); } catch (err) {}
+  };
+  pip.addEventListener("pointerup", up);
+  pip.addEventListener("pointercancel", up);
+}
+
+function moveTo(x, y) {
+  if (!session) return;
+  const s = session;
+  if (s.n === 1) { s.x = clamp(x, 60, 260); s.y = clamp(y, 260, 450); }
+  else if (s.n === 3 || s.n === 4) { s.x = clamp(x, 300, 400); s.y = clamp(y, 330, 450); }
+  else if (s.n === 5) { s.x = clamp(x, 600, 690); s.y = clamp(y, 330, 460); }
+  else if (s.n === 6) { s.x = clamp(x, 700, 980); s.y = clamp(y, 240, 440); }
+  else if (s.n === 7) { s.x = clamp(x, 400, 950); s.y = clamp(y, 250, 520); }
+  else { s.x = x; s.y = y; }
+  updateAll();
+}
+
+/* ---------------- 体积累积 ---------------- */
+function bindDial() {
+  const ring = $("#volRingSvg");
+  if (!ring) return;
+  let drag = null;
+  ring.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    drag = { y: e.clientY, v: session.vol };
+    try { ring.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  ring.addEventListener("pointermove", e => {
+    if (!drag) return;
+    setVolume(drag.v + (drag.y - e.clientY) * 0.7);
+  });
+  const up = e => {
+    drag = null;
+    try { ring.releasePointerCapture(e.pointerId); } catch (err) {}
+  };
+  ring.addEventListener("pointerup", up);
+  ring.addEventListener("pointercancel", up);
+}
+
+function setVolume(v) {
+  if (!session || session.done) return;
+  const s = session;
+  s.vol = Math.round(clamp(v, 20, 200) * 10) / 10;
+  const ring = $("#volRingSvg");
+  if (ring) ring.setAttribute("transform", `translate(300,${yForVol(s.vol)})`);
+  const readout = $("#dialReadout");
+  if (readout) readout.textContent = s.vol.toFixed(1);
+  const value = $("#volValue");
+  if (value) value.textContent = s.vol.toFixed(1);
+  clearError();
+  if (Math.abs(s.vol - 150) < 0.05) {
+    stageHint("体积已到 150.0 µL");
+    completeLevel();
+  } else {
+    stageHint(`当前 ${s.vol.toFixed(1)} µL，目标 150.0 µL`);
+  }
+  updateHUD();
+}
+
+/* ---------------- 挡位 ---------------- */
+function setGear(g) {
+  if (!session || session.done) return;
+  const s = session;
+
+  if (s.n === 3 || s.n === 4) {
+    if (g === s.gear) return;
+    if (g === 1) {
+      if (s.tipVol > 0) {
+        const d = depthMM(SRC, s.y, s.srcVol);
+        if (!inTube(SRC, s.x, s.y) || d <= 0) {
+          s.gear = 0;
+          setError("把吸头降到液面下，再点“按下一档”回打。");
+          updateAll();
+          return;
+        }
+        // 润洗回打：按一档立即把液体打回原管
+        s.srcVol = Math.min(900, s.srcVol + s.tipVol);
+        s.tipVol = 0;
+        s.rinsed = 1;
+        s.gear = 1;
+        clearError();
+        stageHint("润洗 1 次完成：液体已回到 21 管");
+        updateAll();
+        completeLevel();
+        return;
+      }
+      if (inTube(SRC, s.x, s.y) && depthMM(SRC, s.y, s.srcVol) > 0) {
+        s.gear = 0;
+        s.armed = false;
+        setError("先抬出液面，按一档，再入液。");
+        updateAll();
+        return;
+      }
+      s.gear = 1;
+      s.armed = true;
+      clearError();
+      stageHint("一档已按下：把吸头移入液面 2–5 mm，再点“松手复位”。");
+      updateAll();
+      return;
+    }
+    if (g === 0) {
+      if (s.armed) {
+        const d = depthMM(SRC, s.y, s.srcVol);
+        const w = wallDist(SRC, s.x);
+        if (!inTube(SRC, s.x, s.y)) {
+          setError("把吸头放进 21 管里再松手。");
+          s.armed = false; s.gear = 0; updateAll(); return;
+        }
+        if (d < 2) {
+          setError(`浸入太浅（${d.toFixed(1)} mm），会吸进空气。`);
+          s.armed = false; s.gear = 0; updateAll(); return;
+        }
+        if (d > 5) {
+          setError(`插太深（${d.toFixed(1)} mm），外壁会沾液。`);
+          s.armed = false; s.gear = 0; updateAll(); return;
+        }
+        if (w < 5) {
+          setError("吸头蹭到管壁了，往中间挪一点。");
+          s.armed = false; s.gear = 0; updateAll(); return;
+        }
+        s.tipVol = 150;
+        s.srcVol = 750;
+        s.rinseStep = 1;
+        s.armed = false;
+        s.gear = 0;
+        clearError();
+        if (s.n === 3) {
+          stageHint("吸液完成。下一步：在液面下点“按下一档”，把液体回打。");
+          updateAll();
+        } else {
+          stageHint("吸液完成：150.0 µL");
+          updateAll();
+          completeLevel();
+        }
+        return;
+      }
+      s.gear = 0;
+      updateAll();
+      return;
+    }
+    return;
+  }
+
+  if (s.n === 5) {
+    if (g === s.gear) return;
+    if (g === 1) {
+      if (!inTube(DST, s.x, s.y)) {
+        setError("先把吸头移到 PCR 5 管内。");
+        s.gear = 0; updateAll(); return;
+      }
+      if (s.tipVol <= 0) {
+        setError("吸头里没有液体。");
+        s.gear = 0; updateAll(); return;
+      }
+      const w = wallDist(DST, s.x);
+      if (w > 6) {
+        setError(`贴住右壁再排液（现在离壁 ${Math.round(w)} px）。`);
+        s.gear = 0; updateAll(); return;
+      }
+      if (Math.abs(s.tilt) < 12 || Math.abs(s.tilt) > 45) {
+        setError(`把倾角调到 30° 左右（现在 ${s.tilt}°）。`);
+        s.gear = 0; updateAll(); return;
+      }
+      const out = Math.max(0, s.tipVol - 2);
+      s.dstVol += out;
+      s.tipVol = Math.max(0, s.tipVol - out);
+      s.stage1 = true;
+      s.gear = 1;
+      clearError();
+      stageHint("一档排液完成。点“按到二档”吹出残液。");
+      updateAll();
+      return;
+    }
+    if (g === 2) {
+      if (!s.stage1) {
+        setError("先完成一档排液，再按二档。");
+        return;
+      }
+      if (!inTube(DST, s.x, s.y)) {
+        setError("二档要在目标管内吹。");
+        return;
+      }
+      s.dstVol += s.tipVol;
+      s.tipVol = 0;
+      s.stage2 = true;
+      s.gear = 2;
+      clearError();
+      stageHint("二档吹出完成。点“松手复位”结束本关。");
+      updateAll();
+      return;
+    }
+    if (g === 0) {
+      if (s.stage1 && !s.stage2) {
+        setError("还差二档：先点“按到二档”，再松手。");
+        return;
+      }
+      if (s.stage2) {
+        s.gear = 0;
+        updateAll();
+        completeLevel();
+        return;
+      }
+      s.gear = 0;
+      updateAll();
+      return;
+    }
+  }
+}
+
+function setTilt(v) {
+  if (!session) return;
+  session.tilt = clamp(Math.round(v), 0, 45);
+  const el = $("#tiltValue");
+  if (el) el.textContent = session.tilt + "°";
+  const range = $("#tiltRange");
+  if (range) range.value = session.tilt;
+  updateAll();
+}
+
+/* ---------------- 动作 ---------------- */
+function overTipBox() {
+  const s = session;
+  return s && s.x > BOX.x0 && s.x < BOX.x1 && s.y > 328 && s.y < 416;
+}
+function attachTip() {
+  const s = session;
+  if (!s || s.n !== 1 || s.tip) return;
+  if (!overTipBox()) {
+    setError("再靠近盒口一点：把吸头尖端移到绿色高亮区。");
+    return;
+  }
+  s.tip = true;
+  s.tipOk = false;
+  s.x = 174; s.y = 372;
+  clearError();
+  stageHint("咔哒 —— 吸头已装上，点“轻压确认密合”。");
+  updateAll();
+}
+function confirmTip() {
+  const s = session;
+  if (!s || s.n !== 1 || !s.tip || s.tipOk) return;
+  s.tipOk = true;
+  clearError();
+  stageHint("密合确认完成");
+  updateAll();
+  completeLevel();
+}
+function tryEject() {
+  const s = session;
+  if (!s || s.n !== 6) return;
+  if (!s.tip) { setError("已经没有吸头了。"); return; }
+  if (s.tipVol >= 0.5) { setError("先排空吸头，不能带液退。"); return; }
+  if (!overWaste()) { setError("再对准桶口：把吸头移到绿色虚线区。"); return; }
+  s.tip = false;
+  s.tipVol = 0;
+  clearError();
+  stageHint("吸头落入废液桶");
+  updateAll();
+  completeLevel();
+}
+function confirmHome() {
+  const s = session;
+  if (!s || s.n !== 7) return;
+  if (s.tip) { setError("先退掉吸头，再归位。"); return; }
+  if (!inHome()) { setError("把移液器移到右侧绿色归位区。"); return; }
+  clearError();
+  stageHint("归位完成");
+  updateAll();
+  completeLevel();
+}
+function overWaste() {
+  const s = session;
+  return s && s.x > 808 && s.x < 932 && s.y > 260 && s.y < 390;
+}
+function inHome() {
+  const s = session;
+  return s && s.x > HOME.x0 && s.x < HOME.x1 && s.y > HOME.y0 && s.y < HOME.y1;
+}
+
+/* ---------------- 渲染更新 ---------------- */
+function updateAll() {
+  if (!session) return;
+  updatePip();
+  updateHUD();
+  updateGearUI();
+  if (session.n === 3 || session.n === 4) updateSourceVisuals();
+  if (session.n === 5) updateTargetVisuals();
+  if (session.n === 6) updateWasteVisuals();
+  if (session.n === 7) updateHomeVisuals();
+  if (session.n === 1) updateTipBoxVisuals();
+}
+
+function updatePip() {
+  const s = session;
+  const pip = $("#pip");
+  if (!pip || !s) return;
+  pip.setAttribute("transform", `translate(${s.x},${s.y}) rotate(${s.tilt}) scale(${s.scale})`);
+  const tip = $("#gTip");
+  if (tip) tip.style.display = s.tip ? "" : "none";
+  const liq = $("#tipLiq");
+  if (liq) {
+    const h = s.tipVol <= 0 ? 0 : Math.min(56, 5 + s.tipVol / 200 * 52);
+    liq.setAttribute("height", h.toFixed(1));
+    liq.setAttribute("y", (-6 - h).toFixed(1));
+  }
+  const sink = s.gear === 2 ? 48 : s.gear === 1 ? 34 : 0;
+  const cap = $("#capImg");
+  if (cap) cap.setAttribute("y", sink);
+  const vecCap = $("#vecCap");
+  if (vecCap) vecCap.setAttribute("transform", `translate(0,${sink * K})`);
+}
+
+function chip(label, value, kind) {
+  return `<span class="chip ${kind || ""}">${label}：<b>${value}</b></span>`;
+}
+
+function updateHUD() {
+  const s = session;
+  if (!s) return;
+  let html = "";
+  if (s.n === 1) {
+    html += chip("吸头", s.tip ? (s.tipOk ? "已装 · 已确认" : "已装 · 待确认") : "未装", s.tip ? (s.tipOk ? "ok" : "warn") : "bad");
+    html += chip("盒口", overTipBox() ? "对准" : "未对准", overTipBox() ? "ok" : "warn");
+  } else if (s.n === 2) {
+    html += chip("当前", s.vol.toFixed(1) + " µL", Math.abs(s.vol - 150) < 0.05 ? "ok" : "warn");
+    html += chip("目标", "150.0 µL", "ok");
+  } else if (s.n === 3) {
+    const d = depthMM(SRC, s.y, s.srcVol);
+    const dText = d < 0 ? `液面上方 ${Math.abs(d).toFixed(1)} mm` : `${d.toFixed(1)} mm`;
+    html += chip("吸头", s.tipVol.toFixed(0) + " µL", s.tipVol > 0 ? "ok" : "");
+    html += chip("深度", dText, d >= 2 && d <= 5 ? "ok" : "warn");
+    html += chip("润洗", s.rinsed ? "1 / 1" : "0 / 1", s.rinsed ? "ok" : "");
+  } else if (s.n === 4) {
+    const d = depthMM(SRC, s.y, s.srcVol);
+    const w = wallDist(SRC, s.x);
+    const dText = d < 0 ? `液面上方 ${Math.abs(d).toFixed(1)} mm` : `${d.toFixed(1)} mm`;
+    html += chip("深度", dText, d >= 2 && d <= 5 ? "ok" : "warn");
+    html += chip("离壁", Math.round(w) + " px", w >= 5 ? "ok" : "bad");
+    html += chip("吸头", s.tipVol.toFixed(0) + " µL", s.tipVol > 0 ? "ok" : "");
+  } else if (s.n === 5) {
+    const w = wallDist(DST, s.x);
+    html += chip("倾角", s.tilt + "°", s.tilt >= 12 && s.tilt <= 45 ? "ok" : "warn");
+    html += chip("离壁", Math.round(w) + " px", w <= 6 ? "ok" : "bad");
+    html += chip("目标", s.dstVol.toFixed(0) + " µL", s.dstVol === 150 ? "ok" : "");
+    html += chip("吸头", s.tipVol.toFixed(0) + " µL", s.tipVol > 0 ? "ok" : "");
+  } else if (s.n === 6) {
+    html += chip("吸头", s.tip ? (s.tipVol > 0 ? s.tipVol.toFixed(0) + " µL" : "已空") : "已退", s.tip ? (s.tipVol > 0 ? "bad" : "ok") : "ok");
+    html += chip("桶口", overWaste() ? "对准" : "未对准", overWaste() ? "ok" : "warn");
+  } else if (s.n === 7) {
+    html += chip("吸头", s.tip ? "未退" : "已脱", s.tip ? "bad" : "ok");
+    html += chip("位置", inHome() ? "归位区" : "台面上", inHome() ? "ok" : "warn");
+  }
+  $("#hud").innerHTML = html;
+}
+
+function updateGearUI() {
+  const s = session;
+  if (!s) return;
+  const g1 = $("#gear1"), g2 = $("#gear2"), g0 = $("#gear0");
+  if (!g1 || !g0) return;
+  g1.disabled = s.gear !== 0;
+  g0.disabled = s.gear === 0;
+  if (g2) g2.disabled = s.gear !== 1 || !s.stage1;
+  const meter = document.querySelectorAll(".gear-meter span");
+  meter.forEach(el => el.classList.toggle("on", Number(el.dataset.g) === s.gear));
+  const sub1 = $("#sub1"), sub2 = $("#sub2");
+  if (sub1) sub1.classList.toggle("on", s.rinseStep === 0);
+  if (sub2) sub2.classList.toggle("on", s.rinseStep >= 1);
+}
+
+function updateSourceVisuals() {
+  const s = session;
+  if (!s) return;
+  const sy = surfaceY(SRC, s.srcVol);
+  const liq = document.querySelector("#stageSvg .liq");
+  if (liq) {
+    const bottomY = SRC.bottom - 34;
+    liq.setAttribute("d", `M${SRC.cx - 22} ${sy.toFixed(1)} h44 v${(bottomY - sy).toFixed(1)} l-22 34 -22 -34 z`);
+  }
+  const guide = $("#depthGuideWrap");
+  if (guide) guide.innerHTML = sourceGuides(s.n === 4);
+}
+
+function updateTargetVisuals() {
+  const s = session;
+  if (!s) return;
+  const sy = surfaceY(DST, s.dstVol);
+  const liq = document.querySelector("#stageSvg .liq");
+  if (liq) {
+    const bottomY = 468;
+    if (sy < bottomY) liq.setAttribute("d", `M${DST.cx - 22} ${sy.toFixed(1)} h44 v${(bottomY - sy).toFixed(1)} l-22 16 -22 -16 z`);
+    else liq.setAttribute("d", "");
+  }
+  const wall = $("#dstWall");
+  if (wall) {
+    const near = wallDist(DST, s.x) <= 6;
+    wall.setAttribute("fill", near ? "rgba(31,158,116,.25)" : "rgba(31,158,116,0)");
+  }
+  const needle = $("#angleNeedle");
+  if (needle) needle.setAttribute("transform", `rotate(${s.tilt})`);
+}
+
+function updateWasteVisuals() {
+  const s = session;
+  const hit = $("#wasteHit");
+  if (hit) hit.setAttribute("opacity", overWaste() ? "1" : "0");
+  const btn = $("#ejectBtn");
+  if (btn) btn.disabled = !(s && s.tip && s.tipVol < 0.5 && overWaste());
+}
+
+function updateHomeVisuals() {
+  const s = session;
+  const home = $("#home");
+  if (home) home.setAttribute("opacity", inHome() ? "1" : ".78");
+  const btn = $("#homeBtn");
+  if (btn) btn.disabled = !(s && !s.tip && inHome());
+}
+
+function updateTipBoxVisuals() {
+  const s = session;
+  const hl = $("#boxHighlight");
+  if (hl) hl.setAttribute("opacity", overTipBox() ? "1" : ".55");
+  const attach = $("#attachBtn");
+  if (attach) attach.disabled = !(s && !s.tip && overTipBox());
+  const confirm = $("#confirmBtn");
+  if (confirm) confirm.classList.toggle("hidden", !(s && s.tip && !s.tipOk));
+}
+
+/* ---------------- 通关 ---------------- */
+function completeLevel() {
+  const s = session;
+  if (!s || s.done) return;
+  s.done = true;
+  const n = s.n;
+  const wasReplay = isCleared(n);
+  lastComplete = { n, wasReplay };
+  if (!wasReplay) {
+    progress.cleared.push(n);
+    progress.cleared = normalizeCleared(progress.cleared);
+    saveProgress();
+  }
+  const overlay = $("#completeOverlay");
+  const all = progress.cleared.length === 7;
+  $("#completeTitle").textContent = wasReplay ? `第 ${n} 关复习完成` : `第 ${n} 关完成`;
+  if (wasReplay) {
+    $("#completeMsg").textContent = "这一关已经通关，可以继续挑战后面的关卡。";
+  } else if (all) {
+    $("#completeMsg").textContent = "七关全部通关：你已经走完装吸头 → 调体积 → 预润洗 → 吸液 → 排液 → 退吸头 → 收尾。";
+  } else {
+    const next = LEVELS[n];
+    $("#completeMsg").textContent = `第 ${n + 1} 关已解锁：${next.title}。回到主页面继续。`;
+  }
+  overlay.classList.remove("hidden");
+  clearTimeout(completeTimer);
+  completeTimer = setTimeout(() => returnToMap(n), 1600);
+}
+
+$("#completeBack").addEventListener("click", () => {
+  clearTimeout(completeTimer);
+  if (lastComplete) returnToMap(lastComplete.n);
+});
+
+function returnToMap(justCleared) {
+  clearTimeout(completeTimer);
+  $("#completeOverlay").classList.add("hidden");
+  $("#levelView").classList.add("hidden");
+  $("#mapView").classList.remove("hidden");
+  session = null;
+  currentLevel = null;
+  renderMap(justCleared || null);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+$("#backBtn").addEventListener("click", () => {
+  clearTimeout(completeTimer);
+  $("#completeOverlay").classList.add("hidden");
+  $("#levelView").classList.add("hidden");
+  $("#mapView").classList.remove("hidden");
+  session = null;
+  currentLevel = null;
+  renderMap();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* ---------------- 启动 ---------------- */
+renderMap();
+
+/* 测试/调试钩子 */
+window.GAME = {
+  levels: LEVELS,
+  get progress() { return progress; },
+  get session() { return session; },
+  startLevel,
+  returnToMap,
+  moveTo,
+  setGear,
+  setTilt,
+  setVolume,
+  attachTip,
+  confirmTip,
+  tryEject,
+  confirmHome,
+  completeLevel,
+  resetProgress(silent) {
+    progress = { cleared: [] };
+    saveProgress();
+    if (!silent) showToast("进度已重置");
+    renderMap();
+  },
+  overTipBox,
+  overWaste,
+  inHome,
+  depth() { return session ? depthMM(SRC, session.y, session.srcVol) : null; },
+  wall() { return session ? wallDist(session.n === 5 ? DST : SRC, session.x) : null; },
+  surfaceY
+};
+</script>
+</body>
+</html>
