@@ -142,18 +142,19 @@
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 4px 16px rgba(18,42,66,.045);}
   .guide-card{padding:18px 18px 16px;position:sticky;top:16px;}
   @media (max-width:1160px){.guide-card{position:static;}}
-  .guide-setup{font-size:11px;color:#6d879c;background:#f5f9fc;border:1px solid #e0ebf3;border-radius:8px;padding:5px 9px;margin-bottom:12px;}
-  .guide-goal{font-size:18px;line-height:1.45;font-weight:800;letter-spacing:-.01em;margin:0 0 14px;color:#0d3f66;}
-  .guide-row{padding:9px 0;border-top:1px dashed #e7eef5;}
-  .guide-row .label{display:block;font-size:10.5px;letter-spacing:.08em;color:#8aa2b6;font-weight:800;margin-bottom:2px;}
-  .guide-row p{margin:0;font-size:12.5px;line-height:1.65;color:#365a75;}
-  .guide-row.why p{color:#6d879c;font-size:12px;}
-  .guide-row.mistake p{color:#8a5a2a;}
+  .guide-setup{font-size:12px;color:#6d879c;background:#f5f9fc;border:1px solid #e0ebf3;border-radius:8px;padding:6px 10px;margin-bottom:12px;}
+  .guide-goal{font-size:20px;line-height:1.45;font-weight:800;letter-spacing:-.01em;margin:0 0 14px;color:#0d3f66;}
+  .guide-row{padding:10px 0;border-top:1px dashed #e7eef5;}
+  .guide-row .label{display:block;font-size:11px;letter-spacing:.08em;color:#8aa2b6;font-weight:800;margin-bottom:3px;}
+  .guide-row p{margin:0;font-size:14px;line-height:1.65;color:#365a75;}
+  .guide-row.success p{color:#15805a;font-weight:700;}
+  .guide-row.why p{color:#6d879c;font-size:13px;}
+  .guide-row.mistake p{color:#8a5a2a;font-size:13.5px;}
 
   .stage-card{overflow:hidden;}
   .stage-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:#fbfdff;flex-wrap:wrap;}
-  .stage-badge{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:#1a7ec4;background:#eaf5ff;border:1px solid #cfe6f6;border-radius:999px;padding:3px 9px;}
-  .stage-setup{font-size:11.5px;color:#7d95aa;}
+  .stage-badge{font-size:11.5px;font-weight:800;letter-spacing:.08em;color:#1a7ec4;background:#eaf5ff;border:1px solid #cfe6f6;border-radius:999px;padding:4px 10px;}
+  .stage-setup{font-size:12.5px;color:#7d95aa;}
   .stage-wrap{position:relative;width:100%;aspect-ratio:4/3;background:
     radial-gradient(700px 420px at 50% 0%,#ffffff 0%,rgba(255,255,255,0) 65%),
     linear-gradient(#e9eef3,#dfe7ee);
@@ -162,7 +163,7 @@
   #stageSvg{display:block;width:100%;height:100%;user-select:none;}
   .stage-hint{
     position:absolute;left:14px;bottom:14px;max-width:82%;background:rgba(8,26,40,.9);color:#eaf6ff;
-    font-size:12px;line-height:1.5;padding:8px 12px;border-radius:9px;border:1px solid #2f5a7a;
+    font-size:13.5px;line-height:1.5;padding:9px 13px;border-radius:9px;border:1px solid #2f5a7a;
     opacity:0;transform:translateY(6px);transition:.18s;pointer-events:none;
   }
   .stage-hint.on{opacity:1;transform:none;}
@@ -170,7 +171,7 @@
     position:absolute;left:14px;top:12px;z-index:6;
     max-width:72%;padding:7px 14px;border-radius:12px;text-align:left;
     background:rgba(8,26,40,.92);border:1px solid #2f5a7a;color:#eaf6ff;
-    font-size:12.5px;font-weight:700;line-height:1.45;pointer-events:none;
+    font-size:13.5px;font-weight:700;line-height:1.45;pointer-events:none;
     box-shadow:0 6px 18px rgba(8,26,40,.16);
   }
   .thumb-prompt.ok{background:rgba(10,64,44,.95);border-color:#2e8b64;color:#d9ffed;}
@@ -180,8 +181,8 @@
     transform:translate(-50%,-72%);filter:drop-shadow(0 4px 4px rgba(8,26,40,.28));
     will-change:left,top;
   }
-  .hud{display:flex;flex-wrap:wrap;gap:9px;padding:13px 15px;border-top:1px solid var(--line);background:#fbfdff;}
-  .chip{font-size:13px;line-height:1.45;border-radius:999px;padding:5px 12px;border:1px solid #d8e4ef;background:#f4f9fd;color:#3c6785;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .hud{display:flex;flex-wrap:wrap;gap:10px;padding:14px 16px;border-top:1px solid var(--line);background:#fbfdff;}
+  .chip{font-size:15px;line-height:1.45;border-radius:999px;padding:7px 14px;border:1px solid #d8e4ef;background:#f4f9fd;color:#3c6785;white-space:nowrap;font-variant-numeric:tabular-nums;}
   .chip.ok{border-color:#bfe3cf;background:#f0fbf5;color:#1a6b4c;}
   .chip.bad{border-color:#f0d6c8;background:#fdf4ef;color:#9a4a22;}
   .chip.warn{border-color:#eeddbd;background:#fdf8ee;color:#8a6212;}
@@ -189,21 +190,21 @@
 
   .control-card{padding:16px;position:sticky;top:16px;}
   @media (max-width:1160px){.control-card{position:static;}}
-  .control-title{font-size:14px;font-weight:800;color:#123c5c;margin:0 0 8px;letter-spacing:.01em;}
-  .control-note{font-size:11.5px;color:#7d95aa;line-height:1.6;margin-top:10px;}
+  .control-title{font-size:15px;font-weight:800;color:#123c5c;margin:0 0 8px;letter-spacing:.01em;}
+  .control-note{font-size:13px;color:#5f7a90;line-height:1.6;margin-top:10px;}
   .control-note b{color:#365a75;}
   .thumb-step{display:flex;align-items:center;gap:10px;background:#f7fbfe;border:1px solid #dbe8f4;border-radius:12px;padding:10px;margin-bottom:10px;}
-  .thumb-step .thumb-emoji{font-size:26px;line-height:1;flex:none;}
-  .thumb-step .thumb-copy{flex:1;min-width:0;font-size:11.5px;color:#5f7a90;line-height:1.45;}
-  .thumb-step .thumb-copy b{display:block;color:#123c5c;font-size:12.5px;}
+  .thumb-step .thumb-emoji{font-size:28px;line-height:1;flex:none;}
+  .thumb-step .thumb-copy{flex:1;min-width:0;font-size:12.5px;color:#5f7a90;line-height:1.45;}
+  .thumb-step .thumb-copy b{display:block;color:#123c5c;font-size:13.5px;}
   .thumb-step.done{background:#effbf5;border-color:#bfe3cf;}
   .thumb-step.done .thumb-copy b{color:#14664b;}
-  .mini-btn{border:1px solid #cfe0ee;background:#fff;border-radius:8px;padding:7px 10px;font-size:11.5px;font-weight:800;color:#1d4d72;cursor:pointer;white-space:nowrap;}
+  .mini-btn{border:1px solid #cfe0ee;background:#fff;border-radius:8px;padding:8px 11px;font-size:12.5px;font-weight:800;color:#1d4d72;cursor:pointer;white-space:nowrap;}
   .mini-btn:hover{background:#f4faff;border-color:#a9d3ee;}
   .mini-btn:disabled{opacity:.55;cursor:not-allowed;color:#7d95aa;background:#f4f8fb;}
   #thumbTarget{animation:thumbPulse 1.5s ease-in-out infinite;}
   @keyframes thumbPulse{0%,100%{opacity:.72}50%{opacity:1}}
-  .inline-error{background:#fdf1ee;border:1px solid #efc9bf;color:#8a2f22;border-radius:10px;padding:9px 11px;font-size:12px;line-height:1.5;margin-top:11px;}
+  .inline-error{background:#fdf1ee;border:1px solid #efc9bf;color:#8a2f22;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;margin-top:11px;}
   .primary-btn{
     width:100%;border:0;border-radius:11px;padding:12px 14px;font-size:14px;font-weight:800;color:#fff;
     background:linear-gradient(160deg,#1a7ec4,#0b3f6b);cursor:pointer;transition:.15s;
@@ -229,15 +230,21 @@
   .gear-action.two{background:linear-gradient(160deg,#ffe0a0,#e8a51c);border-color:#d5a24d;color:#4a3000;}
   .gear-action.zero{background:#fff;border-color:#cfe0ee;color:#365a75;box-shadow:none;font-weight:700;}
   .gear-action:disabled{opacity:.34;cursor:not-allowed;box-shadow:none;filter:grayscale(.35);}
+  .gear-action.flash{background:linear-gradient(160deg,#d9f7e9,#8fe0bd);border-color:#1f9e74;color:#14664b;box-shadow:0 0 0 3px rgba(31,158,116,.18),0 0 18px rgba(31,158,116,.4);}
+  .gear-action.flash:disabled{opacity:1;filter:none;}
   .gear-meter{display:flex;gap:6px;margin-top:10px;}
   .gear-meter span{flex:1;text-align:center;font-size:11.5px;font-weight:800;padding:5px 0;border-radius:7px;background:#f1f6fa;color:#9aafbe;border:1px solid #e4edf4;}
   .gear-meter span.on{background:#fff6d6;color:#7a5a00;border-color:#e6cf85;}
 
   .vol-readout{font-family:Consolas,monospace;font-size:38px;font-weight:800;color:#0d3f66;line-height:1;letter-spacing:-.02em;margin:8px 0 2px;}
   .vol-readout span{font-size:13px;color:#7d95aa;font-family:inherit;font-weight:600;margin-left:4px;}
-  .vol-target{font-size:12px;color:var(--green);font-weight:800;margin-bottom:10px;}
+  .vol-target{font-size:13px;color:var(--green);font-weight:800;margin-bottom:10px;}
+  .knob-hint{display:grid;gap:6px;margin:10px 0 4px;background:#f4faff;border:1px solid #d7e8f5;border-radius:10px;padding:9px 11px;font-size:12.5px;color:#365a75;}
+  .knob-hint div{display:flex;align-items:center;gap:7px;}
+  .knob-hint .turn{font-size:22px;line-height:1;color:#1a7ec4;font-weight:800;width:24px;text-align:center;}
+  .knob-hint b{color:#0f5c9c;}
   .nudge-row{display:flex;gap:8px;margin:10px 0 2px;}
-  .nudge-row button{flex:1;border:1px solid #cfe0ee;background:#fff;border-radius:9px;padding:8px 0;font-size:13px;font-weight:800;color:#1d4d72;cursor:pointer;}
+  .nudge-row button{flex:1;border:1px solid #cfe0ee;background:#fff;border-radius:9px;padding:9px 0;font-size:14px;font-weight:800;color:#1d4d72;cursor:pointer;}
   .nudge-row button:hover{background:#f4faff;border-color:#a9d3ee;}
 
   .tilt-wrap{display:flex;align-items:center;gap:9px;margin:8px 0 4px;}
@@ -263,10 +270,18 @@
     background:linear-gradient(160deg,#e9fbf1,#c9f0dd);color:#15805a;font-size:34px;font-weight:900;
     border:1px solid #bfe3cf;
   }
-  .complete-card h2{font-size:23px;margin:0 0 6px;letter-spacing:-.01em;}
-  .complete-card p{font-size:13px;color:#5f7a90;margin:0 0 18px;line-height:1.65;}
+  .complete-praise{font-size:27px;line-height:1.2;font-weight:900;color:#15805a;letter-spacing:.01em;margin:0 0 5px;}
+  .complete-card h2{font-size:21px;margin:0 0 12px;letter-spacing:-.01em;color:#123c5c;}
+  .complete-card p{font-size:14px;color:#5f7a90;margin:0 0 12px;line-height:1.65;}
+  .complete-recap{
+    text-align:left;background:#f3fbf7;border:1px solid #d4eee2;border-radius:12px;
+    padding:10px 12px;font-size:14.5px;line-height:1.65;color:#365a75;margin:0 0 10px;
+  }
+  .complete-recap b{display:block;font-size:11px;letter-spacing:.1em;color:#15805a;margin-bottom:3px;}
+  .complete-next{font-size:13px !important;color:#6d879c !important;margin:0 0 16px !important;}
   .complete-card .primary-btn{max-width:260px;margin:0 auto;}
-  .auto-note{font-size:10.5px;color:#9aafbe;margin-top:10px;}
+  .auto-note{font-size:12px;color:#7d95aa;margin-top:10px;}
+  .auto-note b{color:#1a7ec4;font-variant-numeric:tabular-nums;}
 
   /* ---------- toast ---------- */
   .toast{
@@ -365,10 +380,12 @@
 <div class="overlay hidden" id="completeOverlay">
   <div class="complete-card">
     <div class="complete-check">✓</div>
+    <div class="complete-praise" id="completePraise">好厉害！</div>
     <h2 id="completeTitle">第 1 关完成</h2>
-    <p id="completeMsg"></p>
+    <div class="complete-recap" id="completeRecap"></div>
+    <p class="complete-next" id="completeNext"></p>
     <button id="completeBack" class="primary-btn" type="button">返回主页面</button>
-    <div class="auto-note">1.6 秒后自动返回关卡地图</div>
+    <div class="auto-note"><b id="completeCountdown">5</b> 秒后自动返回关卡地图</div>
   </div>
 </div>
 
@@ -400,17 +417,21 @@ const LEVELS = [
     action: "把吸头尖端移到盒口高亮处 → 点“压入吸头” → 点“轻压确认密合”。",
     success: "吸头已装，且密合确认完成。",
     mistake: "离盒口太远 / 只压入没确认。",
-    why: "吸头不密封，吸液会漏气、体积会偏小。"
+    why: "吸头不密封，吸液会漏气、体积会偏小。",
+    praise: "好厉害！",
+    recap: "你完成了装吸头：把吸头压入盒口，并轻压确认密合。枪头稳了，后面的体积才准。"
   },
   {
     n: 2, key: "vol", title: "调体积", tag: "VOL",
     desc: "把体积设定到 150.0 µL。",
     setup: "本关起点：当前体积 200.0 µL",
     goal: "把体积设定到 150.0 µL。",
-    action: "上下拖黄色体积环；向上增大、向下减小。",
+    action: "上下拖黄色体积环：向上拖 = 顺时针调大，向下拖 = 逆时针调小。",
     success: "读数稳定在 150.0 µL。",
     mistake: "拖过头 / 没到 150.0 / 到 150 后又改大。",
-    why: "体积设定错，后面吸多少、打多少都会错。"
+    why: "体积设定错，后面吸多少、打多少都会错。",
+    praise: "漂亮！",
+    recap: "你把体积从 200.0 µL 调到 150.0 µL，读数稳定。顺时针调大、逆时针调小，这个手感记住了。"
   },
   {
     n: 3, key: "rinse", title: "预润洗", tag: "RINSE",
@@ -420,7 +441,9 @@ const LEVELS = [
     action: "① 液面上方点“按下一档” → 入液 2–5 mm → 点“松手复位”吸液；② 在液面下再点“按下一档”回打。",
     success: "液体回到 21 管，吸头内为空，润洗 1/1。",
     mistake: "先入液后按一档 / 空吸头按 / 打到别处。",
-    why: "让吸头内壁先被液体饱和，减少吸附误差。"
+    why: "让吸头内壁先被液体饱和，减少吸附误差。",
+    praise: "稳！",
+    recap: "你完成了 1 次预润洗：先吸一次，再打回原管。吸头内壁被液体饱和，正式吸液会更准。"
   },
   {
     n: 4, key: "asp", title: "吸液", tag: "ASP",
@@ -430,7 +453,9 @@ const LEVELS = [
     action: "液面上方先点“按下一档” → 慢慢入液到绿色深度带 → 点“松手复位”。",
     success: "吸到 150.0 µL，深度 2–5 mm，离壁 ≥5 px。",
     mistake: "入液后再按一档 / 太浅 / 太深 / 贴壁。",
-    why: "深度和离壁决定是否吸空、外壁是否沾液。"
+    why: "深度和离壁决定是否吸空、外壁是否沾液。",
+    praise: "很准！",
+    recap: "你在 21 管吸了 150.0 µL：液面上方先按一档，入液 2–5 mm，离壁够远，再松手。"
   },
   {
     n: 5, key: "disp", title: "排液", tag: "DISP",
@@ -440,7 +465,9 @@ const LEVELS = [
     action: "吸头靠右壁 → 调到 30° → 点“按下一档”排液 → 点“按到二档”吹出 → 点“松手复位”。",
     success: "目标管 150.0 µL，吸头内 0 µL。",
     mistake: "没贴壁 / 角度不对 / 一档就松手 / 悬空吹 / 直接二档。",
-    why: "贴壁 + 二档减少挂壁和残留；松手后擦拭两下；真实实验还要给 PCR 6 配平管加等体积。"
+    why: "贴壁 + 二档减少挂壁和残留；松手后擦拭两下；真实实验还要给 PCR 6 配平管加等体积。",
+    praise: "干得漂亮！",
+    recap: "你贴壁 30° 排了 148 µL，再二档吹出 2 µL，PCR 5 正好 150.0 µL。"
   },
   {
     n: 6, key: "eject", title: "退吸头", tag: "EJECT",
@@ -450,7 +477,9 @@ const LEVELS = [
     action: "先把大拇指放到枪身右上方的灰色退头杆上 → 把吸头移到桶口上方 → 点“退吸头”。",
     success: "吸头落入桶内，且吸头内为空。",
     mistake: "没放大拇指 / 没对准桶口 / 吸头还有液体 / 已经没有吸头。",
-    why: "退头时大拇指先就位，再对准桶口，能避免带液或弹飞。"
+    why: "退头时大拇指先就位，再对准桶口，能避免带液或弹飞。",
+    praise: "利落！",
+    recap: "你先把大拇指放到退头杆，再对准废液桶退掉空吸头，没有带液、没有弹飞。"
   },
   {
     n: 7, key: "home", title: "收尾", tag: "HOME",
@@ -460,7 +489,9 @@ const LEVELS = [
     action: "把枪移到右侧归位区 → 点“确认归位”。",
     success: "吸头已脱、枪在归位区、七关全绿。",
     mistake: "还停在废液桶上 / 吸头没退 / 提前收尾。",
-    why: "归位避免污染、跌落和下次拿错。"
+    why: "归位避免污染、跌落和下次拿错。",
+    praise: "全部通关，太棒了！",
+    recap: "你把枪归位，收好台面。七关走完，这就是一次完整的 150.0 µL 移液流程。"
   }
 ];
 
@@ -551,6 +582,15 @@ function stageHint(msg) {
   hintTimer = setTimeout(() => el.classList.remove("on"), 3200);
 }
 let toastTimer = null;
+function flashButton(el) {
+  if (!el) return;
+  el.classList.remove("flash");
+  void el.offsetWidth;
+  el.classList.add("flash");
+  clearTimeout(el._flashTimer);
+  el._flashTimer = setTimeout(() => el.classList.remove("flash"), 430);
+}
+
 function showToast(msg) {
   const el = $("#toast");
   if (!el) return;
@@ -670,7 +710,7 @@ function renderGuide(n) {
     <div class="guide-setup">${L.setup}</div>
     <p class="guide-goal">${L.goal}</p>
     <div class="guide-row"><span class="label">只做这一件事</span><p>${L.action}</p></div>
-    <div class="guide-row"><span class="label">成功条件</span><p>${L.success}</p></div>
+    <div class="guide-row success"><span class="label">成功条件</span><p>${L.success}</p></div>
     <div class="guide-row mistake"><span class="label">常见错误</span><p>${L.mistake}</p></div>
     <div class="guide-row why"><span class="label">为什么</span><p>${L.why}</p></div>
   `;
@@ -965,7 +1005,11 @@ function renderControls(n) {
         <button id="volMinus" type="button">− 1 µL</button>
         <button id="volPlus" type="button">+ 1 µL</button>
       </div>
-      <div class="control-note">按住黄色体积环上下拖；向上增大、向下减小。到 150.0 就完成。</div>
+      <div class="knob-hint">
+        <div><span class="turn">↻</span><b>顺时针</b> 转旋钮 = 调大体积</div>
+        <div><span class="turn">↺</span><b>逆时针</b> 转旋钮 = 调小体积</div>
+      </div>
+      <div class="control-note">本页用上下拖模拟转动旋钮：向上拖 = 顺时针，向下拖 = 逆时针。到 150.0 就完成。</div>
     `;
     $("#volMinus").addEventListener("click", () => setVolume(session.vol - 1));
     $("#volPlus").addEventListener("click", () => setVolume(session.vol + 1));
