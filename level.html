@@ -474,10 +474,17 @@
   .vol-readout{font-family:Consolas,monospace;font-size:38px;font-weight:800;color:#0d3f66;line-height:1;letter-spacing:-.02em;margin:8px 0 2px;}
   .vol-readout span{font-size:13px;color:#7d95aa;font-family:inherit;font-weight:600;margin-left:4px;}
   .vol-target{font-size:13px;color:var(--green);font-weight:800;margin-bottom:10px;}
-  .knob-hint{display:grid;gap:6px;margin:10px 0 4px;background:#f4faff;border:1px solid #d7e8f5;border-radius:10px;padding:9px 11px;font-size:12.5px;color:#365a75;}
-  .knob-hint div{display:flex;align-items:center;gap:7px;}
-  .knob-hint .turn{font-size:22px;line-height:1;color:#1a7ec4;font-weight:800;width:24px;text-align:center;}
+  .knob-hint{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 4px;background:#f4faff;border:1px solid #d7e8f5;border-radius:10px;padding:9px 11px;}
+  .knob-hint div{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;font-size:11.5px;line-height:1.4;color:#365a75;}
+  .knob-hint div:first-child{border-right:1px solid #d7e8f5;}
+  .knob-hint .turn{font-size:26px;line-height:1;color:#1a7ec4;font-weight:800;}
+  .knob-hint .turn.back{color:#7b93a8;}
   .knob-hint b{color:#0f5c9c;}
+  /* 第 2 关：场景里实物图旁的旋转步进按钮 */
+  .vol-step{cursor:pointer;}
+  .vol-step rect{transition:fill .15s,stroke .15s;}
+  .vol-step:hover rect{fill:#e3f1fc;stroke:#1a7ec4;}
+  .vol-step.pressed rect{fill:#cfe8fa;stroke:#1a7ec4;}
   .vol-feedback{font-size:13.5px;line-height:1.5;border-radius:10px;padding:9px 11px;margin-top:10px;border:1px solid #dbe8f4;background:#f7fbfe;color:#365a75;}
   .vol-feedback.ok{border-color:#bfe3cf;background:#f0fbf5;color:#1a6b4c;font-weight:700;}
   .vol-feedback.warn{border-color:#eeddbd;background:#fdf8ee;color:#8a6212;font-weight:700;}
@@ -639,13 +646,12 @@
           <img src="assets/grip-real.jpg" alt="现实中戴蓝色手套握移液枪：拇指按在顶部按钮上，其余四指自然环握枪身，枪保持竖直">
         </figure>
         <div class="grip-copy">
-          <p class="grip-kicker">💡 温馨提示 · 移液枪正确握法与操作</p>
-          <p class="grip-main">拇指按顶部按钮，其余四指自然环握<b>枪身上部手柄</b>；手腕放松、枪身竖直，别整只手攥紧——手指越松，吸头越稳。</p>
-          <p class="grip-sub">吸头垂直浸入液面 <b>2–5 mm</b>，缓慢匀速松拇指；贴壁 <b>30°</b> 先一档、后二档。</p>
-          <p class="grip-sub">退头杆只在退吸头时按一下；吸头有液绝不平放或倒持。</p>
+          <p class="grip-kicker">💡 移液枪正确握法</p>
+          <p class="grip-main">拇指按在顶部按钮上，其余四指自然环握<b>枪身上部手柄</b>；手腕放松、枪身保持竖直，别整只手攥紧——手指越松，吸头越稳。</p>
+          <p class="grip-sub">握在<b>上部手柄</b>处，不要握在吸头连接杆或体积显示窗附近。</p>
           <div class="grip-foot">
-            <span class="grip-motto">握上不握下，垂直慢松手，贴壁一二档，有液不倒放。</span>
-            <button type="button" class="grip-more" id="gripMore">查看完整 6 步要点 →</button>
+            <span class="grip-motto">握上不握下，手腕放松枪竖直。</span>
+            <button type="button" class="grip-more" id="gripMore">查看完整操作要点 →</button>
           </div>
         </div>
       </div>
@@ -839,12 +845,12 @@ const LEVELS = [
     desc: "把体积设定到 150.0 µL。",
     setup: "本关起点：当前体积 200.0 µL",
     goal: "把体积设定到 150.0 µL。",
-    action: "上下拖黄色体积环：向上拖 = 顺时针调大，向下拖 = 逆时针调小；调好后点“确认体积”。",
+    action: "点实物图旁的 ↺ / ↻ 按钮调体积：↻ 顺时针调大，↺ 逆时针调小；每点一次 0.1 µL，按住可连续变化。量程窗同步显示四位读数，到 150.0 后点“确认体积”。",
     success: "读数稳定在 150.0 µL，点“确认体积”通过。",
     mistake: "偏大 / 偏小 / 没点确认。",
     why: "体积设定错，后面吸多少、打多少都会错。",
     praise: "漂亮！",
-    recap: "你把体积从 200.0 µL 调到 150.0 µL，读数稳定。顺时针调大、逆时针调小，这个手感记住了。"
+    recap: "你把体积从 200.0 µL 调到 150.0 µL，读数稳定。向右拖（顺时针）调大、向左拖（逆时针）调小，这个手感记住了。"
   },
   {
     n: 3, key: "rinse", title: "预润洗", tag: "RINSE",
@@ -1249,13 +1255,41 @@ function pipetteMarkup() {
   </g>`;
 }
 
+/* 第 5 关目标管（PCR 5）真实内腔：口 330 / 直壁底 424 / 锥尖 458 / 内液半宽 22。
+   液体锥尖必须贴合试管锥尖 458，绝不能按旧基准 468 画到试管外面。 */
+const DST_LIQ_HALF = 24, DST_WALL_BOTTOM = 424, DST_TIP = 458, DST_TAPER = 34;
+/* 源液管（第 3/4 关）真实内腔同样是口 330 / 直壁底 424 / 锥尖 458 / 内壁 cx±24。
+   注意：液面 sy 必须继续用 surfaceY(SRC, vol)，深度导引线和“入液 2–5 mm”判定都基于它，
+   所以只修下半部分几何——液面保持原位，直壁底/锥尖/半宽贴合玻璃内壁。 */
+const SRC_LIQ_HALF = 24, SRC_WALL_BOTTOM = 424, SRC_TIP = 458, SRC_TAPER = 34;
+function srcLiquidD(vol) {
+  const sy = surfaceY(SRC, vol);
+  if (sy >= SRC_TIP) return "";
+  const cx = SRC.cx;
+  if (sy <= SRC_WALL_BOTTOM) {
+    return `M${cx - SRC_LIQ_HALF} ${sy.toFixed(1)} h${SRC_LIQ_HALF * 2} v${(SRC_WALL_BOTTOM - sy).toFixed(1)} l-${SRC_LIQ_HALF} ${SRC_TAPER} -${SRC_LIQ_HALF} -${SRC_TAPER} z`;
+  }
+  const half = SRC_LIQ_HALF * (SRC_TIP - sy) / SRC_TAPER;
+  return `M${(cx - half).toFixed(1)} ${sy.toFixed(1)} h${(half * 2).toFixed(1)} l${(-half).toFixed(1)} ${(SRC_TIP - sy).toFixed(1)} z`;
+}
+
+function dstLiquidD(vol) {
+  const f = clamp(vol / 150, 0, 1);
+  if (f <= 0) return "";                       // 空管不显示液体
+  const sy = DST_TIP - f * (DST_TIP - 360);    // 150 µL → 液面 y≈360（PCR 管接近满）
+  const cx = DST.cx;
+  if (sy <= DST_WALL_BOTTOM) {
+    // 半宽 24 与试管玻璃内壁（cx±24）完全贴合，左右沿边不留白缝；锥尖收在真实锥底 458
+    return `M${cx - DST_LIQ_HALF} ${sy.toFixed(1)} h${DST_LIQ_HALF * 2} v${(DST_WALL_BOTTOM - sy).toFixed(1)} l-${DST_LIQ_HALF} ${DST_TAPER} -${DST_LIQ_HALF} -${DST_TAPER} z`;
+  }
+  // 液面落在锥形区内：按相同斜率收到真实锥尖，沿边同样贴合玻璃
+  const half = DST_LIQ_HALF * (DST_TIP - sy) / DST_TAPER;
+  return `M${(cx - half).toFixed(1)} ${sy.toFixed(1)} h${(half * 2).toFixed(1)} l${(-half).toFixed(1)} ${(DST_TIP - sy).toFixed(1)} z`;
+}
+
 function tubeMarkup(t, vol, label) {
   const sy = surfaceY(t, vol);
-  const bottomY = t === DST ? 468 : 436;
-  const taper = t === DST ? 16 : 34;
-  const liq = sy < bottomY
-    ? `M${t.cx - 22} ${sy.toFixed(1)} h44 v${(bottomY - sy).toFixed(1)} l-22 ${taper} -22 -${taper} z`
-    : "";
+  const liq = t === DST ? dstLiquidD(vol) : srcLiquidD(vol);
   return `<g>
     <ellipse cx="${t.cx}" cy="${t.bottom + 12}" rx="33" ry="9" fill="#1d3a52" opacity=".13"/>
     <path d="M${t.cx - 24} ${t.mouth} h48 v94 l-24 34 -24 -34 z" fill="url(#gGlass)" stroke="#9db8cc" stroke-width="1.4"/>
@@ -1363,6 +1397,7 @@ function renderStage(n) {
   } else if (n === 2) {
     svg.setAttribute("viewBox", "0 0 600 600");
     svg.innerHTML = sceneDefs() + dialMarkup();
+    updateCounter(session.vol);
     bindDial();
   } else if (n === 3 || n === 4) {
     svg.setAttribute("viewBox", "250 120 210 390");
@@ -1398,34 +1433,49 @@ function renderStage(n) {
   updatePip();
 }
 
-/* ---------------- 体积表盘（第 2 关） ---------------- */
-function yForVol(v) {
-  return 470 - (clamp(v, 20, 200) - 20) / 180 * 280;
+/* ---------------- 体积表盘（第 2 关：实物旋钮 + 量程窗，无滑杆） ---------------- */
+function updateCounter(v) {
+  const n = Math.round(clamp(v, 20, 200) * 10);
+  const ds = [Math.floor(n / 1000) % 10, Math.floor(n / 100) % 10, Math.floor(n / 10) % 10, n % 10];
+  ["cntH", "cntT", "cntO", "cntD"].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = ds[i];
+  });
 }
 function dialMarkup() {
-  const ticks = [200, 180, 160, 140, 120, 100, 80, 60, 40, 20].map(v => {
-    const y = yForVol(v);
-    return `<line x1="410" x2="${v % 100 === 0 ? 430 : 422}" y1="${y}" y2="${y}" stroke="#9aafbe" stroke-width="1"/>
-      <text x="436" y="${y + 3.5}" font-size="9" fill="#7d95aa">${v}</text>`;
-  }).join("");
-  const ty = yForVol(150);
   return `<rect width="600" height="600" fill="#eef4f9"/>
-    <rect x="170" y="70" width="260" height="480" rx="28" fill="#f9fcfe" stroke="#cfdeea" stroke-width="1.4"/>
-    <rect x="205" y="78" width="190" height="64" rx="13" fill="#0d1e2c" stroke="#38607e"/>
-    <text id="dialReadout" x="300" y="124" text-anchor="middle" font-size="38" font-family="Consolas,monospace" font-weight="700" fill="#7fe6ff">200.0</text>
-    <text x="300" y="154" text-anchor="middle" font-size="10" fill="#79a6c2">µL</text>
-    <line x1="185" x2="430" y1="${ty}" y2="${ty}" stroke="#1f9e74" stroke-width="1.6" stroke-dasharray="6 5"/>
-    <text x="438" y="${ty + 4}" font-size="10" fill="#15805a" font-weight="800">目标 150.0</text>
-    <g id="volRingSvg" transform="translate(300,${yForVol(200)})" style="cursor:ns-resize">
-      <rect x="-108" y="-22" width="216" height="44" rx="12" fill="url(#gYellow)" stroke="#b98d05" stroke-width="2"/>
-      <g stroke="#8f6c04" stroke-width="1.1" opacity=".5">
-        ${Array.from({ length: 11 }).map((_, i) => `<path d="M${-88 + i * 17.6} -14 v28"/>`).join("")}
-      </g>
-      <text x="0" y="5" text-anchor="middle" font-size="12" font-weight="800" fill="#5b4300"
-            stroke="#ffe9a8" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round">上下拖动调体积</text>
+    <rect x="36" y="132" width="528" height="330" rx="28" fill="#f9fcfe" stroke="#cfdeea" stroke-width="1.4"/>
+    <!-- 现实中的白色齿轮旋钮（红框原图），旁边紧贴两个旋转步进按钮 -->
+    <image href="${IMG_VOL_KNOB}" x="48" y="142" width="160" height="161" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
+    <text x="48" y="322" font-size="10" fill="#7d95aa" pointer-events="none">红框：现实中的白色齿轮旋钮</text>
+    <g id="volTurnDown" class="vol-step" role="button" aria-label="逆时针调小，每次 0.1 微升">
+      <rect x="164" y="141" width="94" height="50" rx="11" fill="#f4f9fd" stroke="#a9cbe3" stroke-width="1.4"/>
+      <text x="211" y="166" text-anchor="middle" font-size="22" font-weight="800" fill="#7b93a8" pointer-events="none">↺</text>
+      <text x="211" y="185" text-anchor="middle" font-size="10.5" fill="#365a75" pointer-events="none">逆时针（调小）</text>
     </g>
-    <g>${ticks}</g>
-    <text x="410" y="500" font-size="9" fill="#7d95aa">20–200 µL</text>
+    <g id="volTurnUp" class="vol-step" role="button" aria-label="顺时针调大，每次 0.1 微升">
+      <rect x="264" y="141" width="94" height="50" rx="11" fill="#f4f9fd" stroke="#a9cbe3" stroke-width="1.4"/>
+      <text x="311" y="166" text-anchor="middle" font-size="22" font-weight="800" fill="#1a7ec4" pointer-events="none">↻</text>
+      <text x="311" y="185" text-anchor="middle" font-size="10.5" fill="#365a75" pointer-events="none">顺时针（调大）</text>
+    </g>
+
+    <text x="300" y="270" text-anchor="middle" font-size="10.5" fill="#15805a" font-weight="800" pointer-events="none">▼ 目标 150.0 µL → 量程窗显示 1 / 5 / 0 / 0</text>
+
+    <!-- 量程窗：仿实拍计数器，上→下依次是百位 / 十位 / 个位 / 小数后一位，横线是小数点 -->
+    <rect x="212" y="282" width="176" height="176" rx="14" fill="#122636" stroke="#4b7594" stroke-width="2"/>
+    <rect x="224" y="292" width="152" height="156" rx="6" fill="#08131c"/>
+    <text id="cntH" x="300" y="326" text-anchor="middle" font-size="30" font-family="Consolas,monospace" font-weight="700" fill="#e8f6ff">2</text>
+    <text id="cntT" x="300" y="362" text-anchor="middle" font-size="30" font-family="Consolas,monospace" font-weight="700" fill="#e8f6ff">0</text>
+    <text id="cntO" x="300" y="398" text-anchor="middle" font-size="30" font-family="Consolas,monospace" font-weight="700" fill="#e8f6ff">0</text>
+    <line x1="232" x2="408" y1="410" y2="410" stroke="#f4fbff" stroke-width="2.4"/>
+    <text id="cntD" x="300" y="440" text-anchor="middle" font-size="30" font-family="Consolas,monospace" font-weight="700" fill="#7fe6ff">0</text>
+    <g font-size="10.5" fill="#7d95aa" pointer-events="none">
+      <text x="398" y="322">百位</text>
+      <text x="398" y="358">十位</text>
+      <text x="398" y="394">个位</text>
+      <text x="398" y="436">0.1 µL</text>
+    </g>
+    <text x="300" y="482" text-anchor="middle" font-size="10.5" fill="#6d8aa0" pointer-events="none">量程窗从上到下：百位 / 十位 / 个位 / 小数点后一位 · 点 ↺/↻ 每次 0.1 µL（可连点）</text>
   </g>`;
 }
 
@@ -1452,15 +1502,7 @@ function renderControls(n) {
       </div>
       <button id="volConfirm" class="primary-btn" type="button">确认体积</button>
       <div id="volFeedback" class="vol-feedback hidden" role="status"></div>
-      <div class="vol-ref-inline">
-        <p class="vol-ref-inline-title">现实中用哪个旋钮</p>
-        <img class="vol-ref-inline-img" src="${IMG_VOL_KNOB}" alt="移液器调体积旋钮实物特写，红框标出顶部白色齿轮旋钮">
-        <p class="vol-ref-inline-copy">红框圈出的是枪顶这圈<b>白色齿轮旋钮</b>——现实中拧动它来设定量程，机身侧面的数字窗会同步跳动；本关用上下拖动黄色环来模拟拧这个旋钮。</p>
-      </div>
-      <div class="knob-hint">
-        <div><span class="turn">↻</span><span class="turn">↺</span><span>在实际操作中，顺时针或逆时针旋转螺杆来调节量程大小。</span></div>
-      </div>
-      <div class="control-note">本页用上下拖模拟转动旋钮：向上拖 = 顺时针，向下拖 = 逆时针。± 按钮每次微调 0.1 µL；到 150.0 后点“确认体积”。</div>
+      <div class="control-note">点实物图旁的 ↺ / ↻ 按钮：每点一次变 0.1 µL，按住可连续变化。中间量程窗从上到下同步显示百位 / 十位 / 个位 / 小数后一位（横线是小数点）。到 150.0 后点“确认体积”。</div>
     `;
     $("#volMinus").addEventListener("click", () => setVolume(session.vol - 0.1));
     $("#volPlus").addEventListener("click", () => setVolume(session.vol + 0.1));
@@ -1727,24 +1769,36 @@ function moveTo(x, y) {
 
 /* ---------------- 体积累积 ---------------- */
 function bindDial() {
-  const ring = $("#volRingSvg");
-  if (!ring) return;
-  let drag = null;
-  ring.addEventListener("pointerdown", e => {
-    e.preventDefault();
-    drag = { y: e.clientY, v: session.vol };
-    try { ring.setPointerCapture(e.pointerId); } catch (err) {}
-  });
-  ring.addEventListener("pointermove", e => {
-    if (!drag) return;
-    setVolume(drag.v + (drag.y - e.clientY) * 0.7);
-  });
-  const up = e => {
-    drag = null;
-    try { ring.releasePointerCapture(e.pointerId); } catch (err) {}
+  // 实物图旁的 ↺ / ↻ 按钮：点一次 0.1 µL，按住 150ms 后每 15ms 连续步进（约 6.7 µL/秒）
+  const bindStep = (sel, delta) => {
+    const el = $(sel);
+    if (!el) return;
+    let hold = null, tick = null;
+    const stop = () => {
+      clearTimeout(hold); clearInterval(tick); hold = null; tick = null;
+      el.classList.remove("pressed");
+    };
+    el.addEventListener("pointerdown", e => {
+      if (e.button !== undefined && e.button !== 0) return;
+      e.preventDefault();
+      stop();
+      el.classList.add("pressed");
+      setVolume(session.vol + delta);
+      hold = setTimeout(() => { tick = setInterval(() => setVolume(session.vol + delta), 15); }, 150);
+    });
+    el._stopStep = stop;
   };
-  ring.addEventListener("pointerup", up);
-  ring.addEventListener("pointercancel", up);
+  bindStep("#volTurnDown", -0.1);
+  bindStep("#volTurnUp", 0.1);
+  if (!window.__volStepBound) {
+    window.__volStepBound = true;
+    const stopAll = () => ["#volTurnDown", "#volTurnUp"].forEach(sel => {
+      const el = $(sel); if (el && el._stopStep) el._stopStep();
+    });
+    window.addEventListener("pointerup", stopAll);
+    window.addEventListener("pointercancel", stopAll);
+    window.addEventListener("blur", stopAll);
+  }
 }
 
 function setVolume(v) {
@@ -1752,10 +1806,7 @@ function setVolume(v) {
   const s = session;
   if (s.n === 2 && s.volConfirmed) return;
   s.vol = Math.round(clamp(v, 20, 200) * 10) / 10;
-  const ring = $("#volRingSvg");
-  if (ring) ring.setAttribute("transform", `translate(300,${yForVol(s.vol)})`);
-  const readout = $("#dialReadout");
-  if (readout) readout.textContent = s.vol.toFixed(1);
+  updateCounter(s.vol);
   const value = $("#volValue");
   if (value) value.textContent = s.vol.toFixed(1);
   clearError();
@@ -1781,11 +1832,10 @@ function clearVolFeedback() {
   el.className = "vol-feedback hidden";
 }
 function lockVolumeControls() {
-  const ring = $("#volRingSvg");
-  if (ring) {
-    ring.style.pointerEvents = "none";
-    ring.style.opacity = ".55";
-  }
+  ["volTurnDown", "volTurnUp"].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) { b.style.pointerEvents = "none"; b.style.opacity = ".55"; b.classList.remove("pressed"); }
+  });
   ["volMinus", "volPlus", "volConfirm"].forEach(id => {
     const b = document.getElementById(id);
     if (b) { b.disabled = true; b.classList.remove("is-ready"); }
@@ -1804,11 +1854,11 @@ function confirmVolume() {
     updateHUD();
     completeLevel();
   } else if (v > 150.05) {
-    const msg = `体积偏大（当前 ${v.toFixed(1)} µL），请逆时针调小`;
+    const msg = `体积偏大（当前 ${v.toFixed(1)} µL），请向左拖调小（逆时针）`;
     showVolFeedback(msg, "warn");
     stageHint(msg, true);
   } else {
-    const msg = `体积偏小（当前 ${v.toFixed(1)} µL），请顺时针调大`;
+    const msg = `体积偏小（当前 ${v.toFixed(1)} µL），请向右拖调大（顺时针）`;
     showVolFeedback(msg, "warn");
     stageHint(msg, true);
   }
@@ -2200,45 +2250,48 @@ function condInDst(s) { return inTube(DST, s.x, s.y); }
 const PHASES = {
   1: [
     { id:"align", short:"对准绿框", title:"第 1 步 · 对准绿色框", allow:["attach"], hint:"框对准了，点右侧「压入吸头」",
-      rows:[{ id:"box", label:"枪尾端进入绿色框", live:s=>(overTipBox()||s.tip)?"已进框":"未进框", done:s=>overTipBox()||s.tip }] },
+      rows:[{ id:"box", label:"枪尾端进入绿色框", realtime:true, live:s=>(overTipBox()||s.tip)?"已进框":"未进框", done:s=>overTipBox()||s.tip }] },
     { id:"attach", short:"压入吸头", title:"第 2 步 · 压入吸头", allow:["attach"], hint:"点右侧「压入吸头」",
-      rows:[{ id:"tip", label:"吸头已压入", live:s=>s.tip?"已装上":"未装", done:s=>s.tip }] },
+      rows:[{ id:"tip", label:"压入吸头", live:s=>s.tip?"已装上":"未装", done:s=>s.tip }] },
     { id:"confirm", short:"确认密合", title:"第 3 步 · 确认密合", allow:["confirm"], hint:"点右侧「轻压确认密合」",
       rows:[{ id:"ok", label:"轻压确认密合", live:s=>s.tipOk?"已确认":"待确认", done:s=>s.tipOk }] }
   ],
   2: [
     { id:"dial", short:"设定体积", title:"第 1 步 · 设定体积", allow:[], hint:"到 150.0 µL 后点「确认体积」",
-      rows:[{ id:"vol", label:"读数设定到 150.0 µL", live:s=>s.vol.toFixed(1)+"µL", done:s=>Math.abs(s.vol-150)<0.05 }] },
+      rows:[{ id:"vol", label:"读数设定到 150.0 µL", realtime:true, live:s=>s.vol.toFixed(1)+"µL", done:s=>Math.abs(s.vol-150)<0.05 }] },
     { id:"confirm", short:"确认体积", title:"第 2 步 · 确认体积", allow:["volConfirm"], hint:"点右侧「确认体积」",
       rows:[{ id:"ok", label:"确认体积", live:s=>s.volConfirmed?"已确认":"待确认", done:s=>s.volConfirmed }] }
   ],
   3: [
     { id:"arm", short:"预压", title:"第 1 步 · 预压", allow:["gear1"], hint:"点右侧「按下一档」",
-      rows:[{ id:"pressed", label:"点击按下一档", live:s=>s.armed?"已按下":"待操作", done:s=>s.armed||s.tipVol>0||s.rinsed>0 }] },
+      rows:[{ id:"pressed", label:"在液面上方点击按下一档", live:s=>s.armed?"已按下":"待操作", done:s=>s.armed||s.tipVol>0||s.rinsed>0 }] },
     { id:"dip", short:"入液吸液", title:"第 2 步 · 入液吸液", allow:["gear0"], hint:"条件齐了，点「松手复位」吸液", done:s=>s.tipVol>0,
       rows:[
-        { id:"depth", label:"浸入液面 2–5 mm", live:condDepthTxt, done:s=>condInSrc(s)&&condDepth(s)>=2&&condDepth(s)<=5 },
-        { id:"wall", label:"离壁 ≥5 px", live:s=>Math.round(condWSrc(s))+"px", done:s=>condWSrc(s)>=5 }
+        { id:"depth", label:"浸入液面 2–5 mm", realtime:true, live:condDepthTxt, done:s=>condInSrc(s)&&condDepth(s)>=2&&condDepth(s)<=5 },
+        { id:"wall", label:"离壁 ≥5 px", realtime:true, live:s=>Math.round(condWSrc(s))+"px", done:s=>condWSrc(s)>=5 }
       ] },
     { id:"back", short:"回打", title:"第 3 步 · 回打", allow:["gear1"], hint:"在液面下点「按下一档」回打",
-      rows:[{ id:"rinse", label:"液体回打到 21 管", live:s=>s.rinsed>0?"1 / 1":"0 / 1", done:s=>s.rinsed>0 }] }
+      rows:[
+        { id:"backDepth", label:"吸头在液面下回打", realtime:true, live:s=>condInSrc(s)&&condDepth(s)>0?"已浸没":"液面上", done:s=>condInSrc(s)&&condDepth(s)>0 },
+        { id:"rinse", label:"液体回打到 21 管", live:s=>s.rinsed>0?"1 / 1":"0 / 1", done:s=>s.rinsed>0 }
+      ] }
   ],
   4: [
     { id:"arm", short:"预压", title:"第 1 步 · 预压", allow:["gear1"], hint:"点右侧「按下一档」",
       rows:[{ id:"pressed", label:"液面上方按下一档", live:s=>s.armed?"已按下":"待操作", done:s=>s.armed||s.tipVol>0 }] },
     { id:"dip", short:"入液吸液", title:"第 2 步 · 入液吸液", allow:["gear0"], hint:"吸到 150.0 µL 就完成了",
       rows:[
-        { id:"depth", label:"浸入液面 2–5 mm", live:condDepthTxt, done:s=>condInSrc(s)&&condDepth(s)>=2&&condDepth(s)<=5 },
-        { id:"wall", label:"离壁 ≥5 px", live:s=>Math.round(condWSrc(s))+"px", done:s=>condWSrc(s)>=5 },
+        { id:"depth", label:"浸入液面 2–5 mm", realtime:true, live:condDepthTxt, done:s=>condInSrc(s)&&condDepth(s)>=2&&condDepth(s)<=5 },
+        { id:"wall", label:"离壁 ≥5 px", realtime:true, live:s=>Math.round(condWSrc(s))+"px", done:s=>condWSrc(s)>=5 },
         { id:"vol", label:"吸到 150.0 µL", live:s=>s.tipVol.toFixed(0)+"µL", done:s=>s.tipVol>0 }
       ] }
   ],
   5: [
     { id:"ready", short:"就位排液", title:"第 1 步 · 就位排液", allow:["gear1"], hint:"条件齐了，点「按下一档」排液", done:s=>s.stage1,
       rows:[
-        { id:"tilt", label:"倾角调到 12–45°", live:s=>s.tilt+"°", done:s=>s.tilt>=12&&s.tilt<=45 },
-        { id:"wall", label:"吸头贴住右壁", live:s=>Math.round(condWDst(s))+"px", done:s=>condWDst(s)<=6 },
-        { id:"in", label:"吸头在 PCR 5 管", live:s=>condInDst(s)?"已就位":"未就位", done:s=>condInDst(s) }
+        { id:"tilt", label:"倾角调到 12–45°", realtime:true, live:s=>s.tilt+"°", done:s=>s.tilt>=12&&s.tilt<=45 },
+        { id:"wall", label:"吸头贴住右壁", realtime:true, live:s=>Math.round(condWDst(s))+"px", done:s=>condWDst(s)<=6 },
+        { id:"in", label:"吸头在 PCR 5 管", realtime:true, live:s=>condInDst(s)?"已就位":"未就位", done:s=>condInDst(s) }
       ] },
     { id:"blow", short:"吹出残液", title:"第 2 步 · 吹出残液", allow:["gear2"], hint:"点「按到二档」吹出残液", done:s=>s.stage2,
       rows:[
@@ -2252,7 +2305,7 @@ const PHASES = {
     { id:"thumb", short:"放大拇指", title:"第 1 步 · 放大拇指", allow:["thumb"], hint:"点右侧「放这里」",
       rows:[{ id:"thumb", label:"大拇指放到退头杆", live:s=>s.thumb?"已就位":"未就位", done:s=>s.thumb }] },
     { id:"align", short:"对准桶口", title:"第 2 步 · 对准桶口", allow:["eject"], hint:"桶口已对准，点右侧「② 按下大拇指退吸头」", done:s=>!s.tip,
-      rows:[{ id:"waste", label:"枪头对准桶口", live:s=>overWaste()?"已对准":"未对准", done:s=>overWaste() }] },
+      rows:[{ id:"waste", label:"枪头对准桶口", realtime:true, live:s=>overWaste()?"已对准":"未对准", done:s=>overWaste() }] },
     { id:"eject", short:"退吸头", title:"第 3 步 · 退吸头", allow:["eject"], hint:"点右侧「② 按下大拇指退吸头」",
       rows:[{ id:"tip", label:"吸头已退掉", live:s=>s.tip?"未退":"已脱", done:s=>!s.tip }] }
   ],
@@ -2260,7 +2313,7 @@ const PHASES = {
     { id:"tip", short:"吸头已退", title:"第 1 步 · 吸头已退", allow:[], hint:"",
       rows:[{ id:"tip", label:"吸头已退掉", live:s=>s.tip?"未退":"已脱", done:s=>!s.tip }] },
     { id:"home", short:"放入归位区", title:"第 2 步 · 放入归位区", allow:["home"], hint:"点右侧「确认归位」", done:s=>s.done,
-      rows:[{ id:"in", label:"移液枪放入归位区", live:s=>inHome()?"已放入":"未放入", done:s=>inHome() }] },
+      rows:[{ id:"in", label:"移液枪放入归位区", realtime:true, live:s=>inHome()?"已放入":"未放入", done:s=>inHome() }] },
     { id:"confirm", short:"确认归位", title:"第 3 步 · 确认归位", allow:["home"], hint:"点右侧「确认归位」",
       rows:[{ id:"ok", label:"确认归位", live:s=>s.done?"已归位":"待确认", done:s=>s.done }] }
   ]
@@ -2276,12 +2329,19 @@ function phaseAllows(s, key) {
   if (!ph || !ph.allow) return true;
   return ph.allow.indexOf(key) !== -1;
 }
+/* 条件行分两类：
+   - 状态型（realtime:true）：体积读数、位置、倾角、对中等可逆量，按当前状态实时判定，不锁存，撤销后可变回未完成；
+   - 动作型（默认）：压入/确认/按下等一次性动作，完成后锁存，不回退。 */
+function rowSatisfied(s, ph, r) {
+  return r.realtime ? !!r.done(s) : !!s.latched[phaseKey(s, ph, r)];
+}
 function latchRows(s) {
   const P = PHASES[s.n];
   if (!P) return;
   for (let i = 0; i <= s.phase && i < P.length; i++) {
     const ph = P[i];
     ph.rows.forEach(r => {
+      if (r.realtime) return;               // 状态型不锁存，交给实时判定
       const k = phaseKey(s, ph, r);
       if (!s.latched[k] && r.done(s)) s.latched[k] = { val: r.live ? String(r.live(s)) : "" };
     });
@@ -2289,20 +2349,23 @@ function latchRows(s) {
 }
 function phaseComplete(s, ph) {
   if (ph.done) return !!ph.done(s);
-  return ph.rows.every(r => !!s.latched[phaseKey(s, ph, r)]);
+  return ph.rows.every(r => rowSatisfied(s, ph, r));
 }
-/* 阶段只往前走，绝不回退；每次交互后由 updateAll / completeLevel 调用。 */
+/* 状态型条件可让阶段回退；动作型条件一旦完成仍靠锁存保持。每次交互后由 updateAll / completeLevel 调用。 */
 function syncPhase() {
   const s = session;
   if (!s) return;
   const P = PHASES[s.n];
   if (!P || !P.length) return;
+  let target = 0;
   for (let guard = 0; guard <= P.length; guard++) {
+    s.phase = target;
     latchRows(s);
-    if (s.phase >= P.length - 1) break;
-    if (!phaseComplete(s, P[s.phase])) break;
-    s.phase++;
+    if (target >= P.length - 1) break;
+    if (!phaseComplete(s, P[target])) break;
+    target++;
   }
+  s.phase = target;
 }
 function updateCondCard() {
   const el = $("#condCard");
@@ -2314,19 +2377,12 @@ function updateCondCard() {
   el.classList.toggle("cond-right", s.n === 5);
   const ph = P[Math.min(s.phase, P.length - 1)];
   const rows = ph.rows.map(r => {
-    const lat = s.latched[phaseKey(s, ph, r)];
-    const ok = !!lat || !!r.done(s);
-    const val = lat ? lat.val : (r.live ? String(r.live(s)) : "");
+    const ok = rowSatisfied(s, ph, r);
+    const val = r.live ? String(r.live(s)) : "";
     return { ok, html: `<div class="cond-row${ok ? " ok" : ""}"><span class="cond-dot"></span><span>${r.label}</span><span class="cond-val">${val}</span></div>` };
   });
   const doneN = rows.filter(r => r.ok).length;
   const all = doneN === rows.length;
-  const archived = [];
-  for (let i = 0; i < s.phase; i++) {
-    const p = P[i];
-    const vals = p.rows.map(r => { const lat = s.latched[phaseKey(s, p, r)]; return lat ? lat.val : ""; }).filter(Boolean);
-    archived.push(`<div class="cond-archived">✓ 第 ${i + 1} 步 · ${p.short}${vals.length ? ` · <span class="arch-val">${vals.join(" · ")}</span>` : ""}</div>`);
-  }
   const steps = P.map((_, i) => `<span class="cond-step${i < s.phase ? " done" : i === s.phase ? " on" : ""}"></span>`).join("");
   el.innerHTML = `
     <div class="cond-head">
@@ -2334,7 +2390,6 @@ function updateCondCard() {
       <span class="cond-count${all ? "" : " pending"}">${doneN} / ${rows.length}</span>
     </div>
     <div class="cond-progress"><div class="cond-steps">${steps}</div><span class="cond-phase-txt">第 ${s.phase + 1} / ${P.length} 步</span></div>
-    ${archived.join("")}
     ${rows.map(r => r.html).join("")}
     ${all && ph.hint ? `<div class="cond-foot">${ph.hint}</div>` : ""}
   `;
@@ -2378,12 +2433,8 @@ function updateGearUI() {
 function updateSourceVisuals() {
   const s = session;
   if (!s) return;
-  const sy = surfaceY(SRC, s.srcVol);
   const liq = document.querySelector("#stageSvg .liq");
-  if (liq) {
-    const bottomY = SRC.bottom - 34;
-    liq.setAttribute("d", `M${SRC.cx - 22} ${sy.toFixed(1)} h44 v${(bottomY - sy).toFixed(1)} l-22 34 -22 -34 z`);
-  }
+  if (liq) liq.setAttribute("d", srcLiquidD(s.srcVol));
   const guide = $("#depthGuideWrap");
   if (guide) guide.innerHTML = sourceGuides(s.n === 4);
 }
@@ -2391,13 +2442,8 @@ function updateSourceVisuals() {
 function updateTargetVisuals() {
   const s = session;
   if (!s) return;
-  const sy = surfaceY(DST, s.dstVol);
   const liq = document.querySelector("#stageSvg .liq");
-  if (liq) {
-    const bottomY = 468;
-    if (sy < bottomY) liq.setAttribute("d", `M${DST.cx - 22} ${sy.toFixed(1)} h44 v${(bottomY - sy).toFixed(1)} l-22 16 -22 -16 z`);
-    else liq.setAttribute("d", "");
-  }
+  if (liq) liq.setAttribute("d", dstLiquidD(s.dstVol));
   const wall = $("#dstWall");
   if (wall) {
     const near = wallDist(DST, s.x) <= 6;
