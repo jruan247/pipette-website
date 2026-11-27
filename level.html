@@ -13,6 +13,8 @@
     --shadow:0 10px 30px rgba(18,42,66,.10);
   }
   *{box-sizing:border-box;}
+  /* 整页缩放：默认 1.1，右下角控件可调（0.8–1.6） */
+  html{zoom:var(--page-zoom,1.1);}
   html,body{min-height:100%;}
   body{
     margin:0;background:
@@ -24,6 +26,19 @@
   }
   button{font-family:inherit;}
   .hidden{display:none !important;}
+  /* 整页缩放工具条（固定在右下角，不随页面滚动） */
+  .page-zoom{
+    position:fixed;right:14px;bottom:14px;z-index:90;display:flex;align-items:center;gap:2px;
+    padding:4px 5px;background:rgba(255,255,255,.95);border:1px solid #cfe0ee;border-radius:999px;
+    box-shadow:0 4px 16px rgba(18,42,66,.14);backdrop-filter:blur(6px);
+  }
+  .page-zoom button{
+    width:30px;height:30px;border:0;border-radius:50%;background:#eef5fb;color:#0f5c9c;
+    font-size:17px;font-weight:800;line-height:1;cursor:pointer;
+  }
+  .page-zoom button:hover{background:#dcecf8;}
+  .page-zoom button:disabled{opacity:.45;cursor:default;}
+  .page-zoom .zoom-val{min-width:48px;text-align:center;font-size:12px;font-weight:800;color:#365a75;}
   .app{max-width:1440px;margin:0 auto;padding:24px 24px 34px;}
   .view{animation:fadeIn .28s ease both;}
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -37,15 +52,18 @@
     border:1px solid var(--line);border-radius:26px;padding:30px 32px;
     box-shadow:var(--shadow);position:relative;overflow:hidden;
   }
-  .hero-top{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;position:relative;z-index:1;}
+  .hero-top{position:relative;z-index:1;}
   .hero-copy{min-width:0;}
+  /* 下排：左边握法框，右边通关框 + 重置键，两者上沿齐平 */
+  .hero-bottom{display:flex;align-items:flex-start;gap:24px;margin-top:18px;position:relative;z-index:1;}
   /* 温馨小提示：现实握法 */
   .hero-tip{
-    display:flex;align-items:center;gap:18px;margin-top:18px;padding:14px 16px;
-    width:min(100%,780px);
+    display:flex;align-items:center;gap:18px;padding:14px 16px;
+    flex:1;min-width:0;max-width:780px;
     background:linear-gradient(135deg,#f2fbf6,#edf6fd);border:1px solid #d3e8dd;border-radius:16px;
     position:relative;z-index:1;
   }
+  .hero-side{flex:none;width:300px;display:flex;flex-direction:column;gap:10px;}
   .grip-photo{flex:none;width:132px;margin:0;position:relative;cursor:zoom-in;}
   .grip-photo::after{
     content:"🔍";position:absolute;right:6px;bottom:6px;width:22px;height:22px;border-radius:50%;
@@ -139,7 +157,7 @@
   .eyebrow{font-size:11px;letter-spacing:.22em;color:var(--blue2);font-weight:800;margin:0 0 4px;}
   .map-hero h1{font-size:38px;line-height:1.1;margin:0 0 8px;letter-spacing:-.02em;}
   .map-hero .sub{font-size:14px;color:var(--ink2);margin:0;max-width:640px;}
-  .progress-box{min-width:300px;background:rgba(255,255,255,.78);border:1px solid #d9e7f2;border-radius:18px;padding:15px 17px;backdrop-filter:blur(6px);}
+  .progress-box{min-width:0;width:100%;background:rgba(255,255,255,.78);border:1px solid #d9e7f2;border-radius:18px;padding:15px 17px;backdrop-filter:blur(6px);box-sizing:border-box;}
   .progress-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
   .progress-num{font-size:28px;font-weight:800;letter-spacing:-.03em;color:#0d3f66;font-variant-numeric:tabular-nums;}
   .progress-num span{font-size:14px;color:var(--muted);font-weight:600;}
@@ -212,6 +230,9 @@
   .map-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:16px;color:var(--muted);font-size:12px;}
   .link-btn{border:0;background:none;color:#7d95aa;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:4px;}
   .link-btn:hover{color:var(--red);}
+  /* 主页进度卡下方的小重置键 */
+  .hero-reset{align-self:flex-start;border:1px solid #7c97ad;background:#8199ae;color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:5px 11px;cursor:pointer;transition:.15s;}
+  .hero-reset:hover{background:#6d869b;border-color:#6d869b;}
   .all-clear{
     margin-top:14px;border:1px solid #bfe3cf;background:linear-gradient(135deg,#effcf5,#ffffff);
     color:#14664b;border-radius:16px;padding:13px 16px;font-size:13px;display:flex;gap:10px;align-items:center;
@@ -230,9 +251,9 @@
   .dots span.done{background:var(--green2);border-color:var(--green2);}
   .dots span.current{background:var(--blue2);border-color:var(--blue2);box-shadow:0 0 0 4px rgba(26,126,196,.15);}
 
-  .level-layout{display:grid;grid-template-columns:305px minmax(0,1fr) 300px;gap:16px;align-items:start;}
-  @media (max-width:1160px){.level-layout{grid-template-columns:260px minmax(0,1fr);} .control-card{grid-column:1 / -1;}}
-  @media (max-width:860px){.level-layout{grid-template-columns:1fr;} .control-card{grid-column:auto;}}
+  .level-layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start;max-width:1180px;margin:0 auto;}
+  @media (max-width:1160px){.level-layout{grid-template-columns:300px minmax(0,1fr);}}
+  @media (max-width:860px){.level-layout{grid-template-columns:1fr;}}
 
   /* 第 2 关实物对照：嵌在右侧控制卡内、位于旋钮说明上方 */
   .vol-ref-inline{margin:12px 0 2px;padding:10px 11px;background:#f7fbfe;border:1px solid #dceaf5;border-radius:12px;}
@@ -244,8 +265,13 @@
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 4px 16px rgba(18,42,66,.045);}
   .guide-card{padding:18px 18px 16px;position:sticky;top:16px;}
   @media (max-width:1160px){.guide-card{position:static;}}
+  .guide-controls{background:#f4faff;border:1.5px solid #cfe6f6;border-radius:13px;padding:14px 14px 12px;}
+  .guide-controls #controlCard{font-size:13px;color:#365a75;}
+  .guide-controls .inline-error{margin-top:10px;}
+  .guide-head{margin-bottom:12px;}
+  .guide-copy{margin:14px 0 0;}
   .guide-setup{font-size:12px;color:#6d879c;background:#f5f9fc;border:1px solid #e0ebf3;border-radius:8px;padding:6px 10px;margin-bottom:12px;}
-  .guide-goal{font-size:20px;line-height:1.45;font-weight:800;letter-spacing:-.01em;margin:0 0 14px;color:#0d3f66;}
+  .guide-goal{font-size:20px;line-height:1.45;font-weight:800;letter-spacing:-.01em;margin:0;color:#0d3f66;}
   .guide-row{padding:10px 0;border-top:1px dashed #e7eef5;}
   .guide-row .label{display:block;font-size:11px;letter-spacing:.08em;color:#8aa2b6;font-weight:800;margin-bottom:3px;}
   .guide-row p{margin:0;font-size:14px;line-height:1.65;color:#365a75;}
@@ -275,8 +301,10 @@
     background:rgba(255,255,255,.96);border:1px solid #d8e4ef;border-radius:12px;
     padding:10px 12px;box-shadow:0 4px 14px rgba(20,50,80,.10);pointer-events:none;
   }
-  /* 第 5 关：左上角被倾角刻度占用，条件卡改贴右上角空白处，避免相互遮挡 */
-  .cond-card.cond-right{left:auto;right:14px;}
+  /* 条件卡统一固定左上角；第 5 关量角器落在场景偏左，给条件卡留窄一点避免贴得太近 */
+  .cond-card.cond-left-tight{left:10px;width:176px;}
+  /* 兼容旧状态：不再让任何关卡把条件卡挪到右上角 */
+  .cond-card.cond-right{left:14px;right:auto;}
   /* 量角器拖动热区：去掉焦点黑框，键盘聚焦时改画一圈虚线 */
   #tiltDrag{outline:none;stroke:none;touch-action:none;}
   #tiltDrag:focus{outline:none;}
@@ -312,7 +340,7 @@
   .cond-archived{margin-top:5px;padding:3px 7px;border-radius:7px;background:#eefaf3;border:1px solid #cfe9da;font-size:11px;line-height:1.45;color:#1a6b4c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   @media (max-width:600px){
     .cond-card{width:168px;max-width:52%;padding:8px 9px;}
-    .cond-card.cond-right{right:10px;}
+    .cond-card.cond-right{left:10px;right:auto;}
     .cond-row{font-size:11px;gap:5px;}
     .cond-val{display:none;}
     .cond-archived{font-size:10px;padding:2px 6px;}
@@ -321,10 +349,12 @@
   /* 第 3/4/5 关：中间栏右侧「按压档位」放大小窗（只读镜像，不挡操作） */
   .gear-zoom{
     position:absolute;right:14px;top:58%;transform:translateY(-50%);z-index:6;
-    width:152px;padding:9px 11px 8px;border-radius:14px;
+    width:172px;padding:9px 11px 8px;border-radius:14px;
     background:rgba(255,255,255,.96);border:1.5px solid #b9d8f0;
     box-shadow:0 8px 22px rgba(18,42,66,.16);pointer-events:none;
   }
+  /* 第 3/4/5 关：小窗统一放在场景左侧 */
+  .gear-zoom.gz-left{left:14px;right:auto;}
   .gear-zoom::before{
     content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
     background:linear-gradient(160deg,rgba(234,245,255,.6),rgba(255,255,255,0) 62%);
@@ -351,7 +381,8 @@
   .gz-state b{color:#0f5c9c;font-size:12px;}
   .gz-state b.ok{color:#15805a;}
   @media (max-width:600px){
-    .gear-zoom{right:8px;top:69%;width:118px;padding:8px 9px 7px;border-radius:12px;}
+    .gear-zoom{right:8px;top:69%;width:134px;padding:8px 9px 7px;border-radius:12px;}
+    .gear-zoom.gz-left{left:8px;right:auto;}
     .gz-head{font-size:10.5px;gap:5px;}
     .gz-lens{width:12px;height:12px;border-width:1.8px;}
     .gz-x{display:none;}
@@ -391,7 +422,10 @@
   .control-title{font-size:15px;font-weight:800;color:#123c5c;margin:0 0 8px;letter-spacing:.01em;}
   .control-note{font-size:13px;color:#5f7a90;line-height:1.6;margin-top:10px;}
   .control-note b{color:#365a75;}
-  .thumb-step{display:flex;align-items:center;gap:10px;background:#f7fbfe;border:1px solid #dbe8f4;border-radius:12px;padding:10px;margin-bottom:10px;}
+  .thumb-step{display:flex;align-items:center;gap:10px;background:#f7fbfe;border:1px solid #dbe8f4;border-radius:12px;padding:10px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,background .15s;}
+  .thumb-step:not(.done):hover{border-color:#8fc7ee;background:#eff8ff;}
+  .thumb-step.done{cursor:default;}
+  .thumb-step .thumb-emoji img{cursor:inherit;}
   .thumb-step .thumb-emoji{font-size:28px;line-height:1;flex:none;}
   .thumb-step .thumb-copy{flex:1;min-width:0;font-size:12.5px;color:#5f7a90;line-height:1.45;}
   .thumb-step .thumb-copy b{display:block;color:#123c5c;font-size:13.5px;}
@@ -602,7 +636,9 @@
     .app{padding:14px 12px 24px;}
     .map-hero{padding:20px;}
     .hero-top{flex-direction:column;align-items:stretch;gap:16px;}
-    .hero-tip{gap:12px;padding:10px 12px;margin-top:16px;}
+    .hero-bottom{flex-direction:column;gap:14px;margin-top:16px;}
+    .hero-side{width:100%;}
+    .hero-tip{gap:12px;padding:10px 12px;max-width:none;}
     .grip-photo{width:92px;}
     .grip-photo img{height:126px;}
     .grip-foot{gap:7px;margin-top:7px;padding-top:7px;}
@@ -631,29 +667,34 @@
           <h1>移液器闯关</h1>
           <p class="sub">七道小关，练出一支稳准的手。从拧对刻度、扣紧枪头，到吸液贴壁、二档吹干——每一步都是实验室里真实会翻车的地方。不用背手册，玩一遍就记住。</p>
         </div>
-        <div class="progress-box">
-          <div class="progress-top">
-            <div class="progress-num"><span id="clearedCount">0</span><span>/ 7</span></div>
-            <div class="status" id="progressBadge">准备开始</div>
-          </div>
-          <div class="progress-bar"><div id="progressFill"></div></div>
-          <div class="progress-label" id="progressLabel">从第 1 关开始</div>
-        </div>
       </div>
 
-      <div class="hero-tip">
-        <figure class="grip-photo" id="gripPhoto" role="button" tabindex="0" aria-label="放大查看握法照片与完整操作要点">
-          <img src="assets/grip-real.jpg" alt="现实中戴蓝色手套握移液枪：拇指按在顶部按钮上，其余四指自然环握枪身，枪保持竖直">
-        </figure>
-        <div class="grip-copy">
-          <p class="grip-kicker">💡 移液枪正确握法</p>
-          <p class="grip-main">拇指按在顶部按钮上，其余四指自然环握<b>枪身上部手柄</b>；手腕放松、枪身保持竖直，别整只手攥紧——手指越松，吸头越稳。</p>
-          <p class="grip-sub">握在<b>上部手柄</b>处，不要握在吸头连接杆或体积显示窗附近。</p>
-          <div class="grip-foot">
-            <span class="grip-motto">握上不握下，手腕放松枪竖直。</span>
-            <button type="button" class="grip-more" id="gripMore">查看完整操作要点 →</button>
+      <div class="hero-bottom">
+        <div class="hero-tip">
+          <figure class="grip-photo" id="gripPhoto" role="button" tabindex="0" aria-label="放大查看握法照片与完整操作要点">
+            <img src="assets/grip-real.jpg" alt="现实中戴蓝色手套握移液枪：拇指按在顶部按钮上，其余四指自然环握枪身，枪保持竖直">
+          </figure>
+          <div class="grip-copy">
+            <p class="grip-kicker">💡 移液枪正确握法</p>
+            <p class="grip-main">拇指按在顶部按钮上，其余四指自然环握<b>枪身上部手柄</b>；手腕放松、枪身保持竖直，别整只手攥紧——手指越松，吸头越稳。</p>
+            <p class="grip-sub">握在<b>上部手柄</b>处，不要握在吸头连接杆或体积显示窗附近。</p>
+            <div class="grip-foot">
+              <span class="grip-motto">握上不握下，手腕放松枪竖直。</span>
+              <button type="button" class="grip-more" id="gripMore">查看完整操作要点 →</button>
+            </div>
           </div>
         </div>
+        <aside class="hero-side">
+          <div class="progress-box">
+            <div class="progress-top">
+              <div class="progress-num"><span id="clearedCount">0</span><span>/ 7</span></div>
+              <div class="status" id="progressBadge">准备开始</div>
+            </div>
+            <div class="progress-bar"><div id="progressFill"></div></div>
+            <div class="progress-label" id="progressLabel">从第 1 关开始</div>
+          </div>
+          <button id="heroReset" class="hero-reset" type="button">点此重置</button>
+        </aside>
       </div>
     </header>
 
@@ -682,7 +723,14 @@
     </header>
 
     <div class="level-layout" id="levelLayout">
-      <aside class="panel guide-card" id="guideCard"></aside>
+      <aside class="panel guide-card" id="guideCard">
+        <div class="guide-head" id="guideHead"></div>
+        <div class="guide-controls">
+          <div id="controlCard"></div>
+          <div class="inline-error hidden" id="inlineError"></div>
+        </div>
+        <div class="guide-copy" id="guideCopy"></div>
+      </aside>
 
       <main class="panel stage-card">
         <div class="stage-top">
@@ -698,11 +746,6 @@
         </div>
         <div class="hud" id="hud"></div>
       </main>
-
-      <aside class="panel control-card">
-        <div id="controlCard"></div>
-        <div class="inline-error hidden" id="inlineError"></div>
-      </aside>
     </div>
   </section>
 </div>
@@ -714,6 +757,13 @@
   <span class="confetti-note" id="confettiNote">🎉 本关完成！稍等一下…</span>
 </div>
 <img class="thumb-cursor hidden" id="thumbCursor" src="assets/thumb-pointer.png" alt="" aria-hidden="true" draggable="false">
+
+<!-- 整页缩放 -->
+<div class="page-zoom" id="pageZoom" role="group" aria-label="页面缩放">
+  <button type="button" id="zoomOut" aria-label="缩小页面">−</button>
+  <span class="zoom-val" id="zoomVal">110%</span>
+  <button type="button" id="zoomIn" aria-label="放大页面">+</button>
+</div>
 
 <!-- 握法照片 + 完整操作要点 -->
 <div class="zoom hidden" id="gripZoom" aria-hidden="true">
@@ -881,9 +931,9 @@ const LEVELS = [
     desc: "贴壁 30°，把 150.0 µL 打进 PCR 5。",
     setup: "本关起点：吸头内 150.0 µL · PCR 5 空管",
     goal: "贴壁 30°，把 150.0 µL 打进 PCR 5。",
-    action: "吸头靠右壁 → 调到 30° → 点“按下一档”排液 → 点“按到二档”吹出 → 点“松手复位”。",
+    action: "吸头靠左壁 → 调到 30° → 点“按下一档”排液 → 点“按到二档”吹出 → 点“松手复位”。",
     success: "目标管 150.0 µL，吸头内 0 µL。",
-    mistake: "没贴壁 / 角度不对 / 一档就松手 / 悬空吹 / 直接二档。",
+    mistake: "没贴左壁 / 角度不对 / 一档就松手 / 悬空吹 / 直接二档。",
     why: "贴壁 + 二档减少挂壁和残留；松手后擦拭两下；真实实验还要给 PCR 6 配平管加等体积。",
     praise: "干得漂亮！",
     recap: "你贴壁 30° 排了 148 µL，再二档吹出 2 µL，PCR 5 正好 150.0 µL。"
@@ -893,7 +943,7 @@ const LEVELS = [
     desc: "先放大拇指，再把空吸头退进废液桶。",
     setup: "本关起点：吸头已空 · 大拇指未就位",
     goal: "把空吸头退进废液桶。",
-    action: "先把大拇指放到枪身右上方的灰色退头杆上 → 把吸头移到桶口上方 → 点“退吸头”。",
+    action: "把蓝色大拇指移到枪顶橙框上、压住框点一下 → 把吸头移到桶口上方 → 点“退吸头”。",
     success: "吸头落入桶内，且吸头内为空。",
     mistake: "没放大拇指 / 没对准桶口 / 吸头还有液体 / 已经没有吸头。",
     why: "退头时大拇指先就位，再对准桶口，能避免带液或弹飞。",
@@ -907,7 +957,7 @@ const LEVELS = [
     goal: "把移液器归位，结束本轮。",
     action: "把枪身拖进绿色归位区（一半以上进框）→ 点“确认归位”。",
     success: "吸头已脱、枪身一半以上进框、七关全绿。",
-    mistake: "枪身进框不到一半 / 只让锚点进框 / 吸头没退。",
+    mistake: "枪身进框不到一半 / 只让锚点进框。",
     why: "归位避免污染、跌落和下次拿错。",
     praise: "全部通关，太棒了！",
     recap: "你把枪归位，收好台面。七关走完，这就是一次完整的 150.0 µL 移液流程。"
@@ -1102,13 +1152,15 @@ $("#levelGrid").addEventListener("click", e => {
   startLevel(n);
 });
 
-$("#resetProgress").addEventListener("click", () => {
+function resetAllProgress() {
   if (!confirm("确定清空七关进度？")) return;
   progress = { cleared: [] };
   saveProgress();
   renderMap();
   showToast("进度已重置，从第 1 关开始");
-});
+}
+$("#resetProgress").addEventListener("click", resetAllProgress);
+$("#heroReset").addEventListener("click", resetAllProgress);
 
 /* ---------------- 关卡切换 ---------------- */
 async function startLevel(n) {
@@ -1146,9 +1198,11 @@ function renderDots() {
 
 function renderGuide(n) {
   const L = LEVELS[n - 1];
-  $("#guideCard").innerHTML = `
+  $("#guideHead").innerHTML = `
     <div class="guide-setup">${L.setup}</div>
     <p class="guide-goal">${L.goal}</p>
+  `;
+  $("#guideCopy").innerHTML = `
     <div class="guide-row"><span class="label">只做这一件事</span><p>${L.action}</p></div>
     <div class="guide-row success"><span class="label">成功条件</span><p>${L.success}</p></div>
     <div class="guide-row mistake"><span class="label">常见错误</span><p>${L.mistake}</p></div>
@@ -1241,7 +1295,8 @@ function pipetteMarkup() {
     </g>
     <rect id="pipHit" x="-42" y="-370" width="84" height="310" fill="transparent" pointer-events="all"/>
     <g id="thumbTarget" style="display:none;cursor:pointer">
-      <rect x="-10" y="-356" width="78" height="52" fill="transparent"/>
+      <!-- 热区覆盖整顶帽 + 橙色示意框 + 数字1 + “按这里”文字，整块范围内点哪儿都能放下大拇指 -->
+      <rect x="-44" y="-372" width="108" height="66" fill="transparent"/>
       <rect x="4" y="-340" width="32" height="16" rx="3" fill="rgba(224,138,18,.16)" stroke="#e08a12" stroke-width="2.2" stroke-dasharray="5 4"/>
       <circle cx="44" cy="-344" r="10" fill="#e08a12"/>
       <text x="44" y="-339.6" text-anchor="middle" font-size="13" fill="#fff" font-weight="700" pointer-events="none">1</text>
@@ -1276,7 +1331,7 @@ function srcLiquidD(vol) {
 function dstLiquidD(vol) {
   const f = clamp(vol / 150, 0, 1);
   if (f <= 0) return "";                       // 空管不显示液体
-  const sy = DST_TIP - f * (DST_TIP - 360);    // 150 µL → 液面 y≈360（PCR 管接近满）
+  const sy = DST_TIP - f * (DST_TIP - 404);    // 150 µL → 液面 y≈404（低于管高中点 394，看起来不到半管）
   const cx = DST.cx;
   if (sy <= DST_WALL_BOTTOM) {
     // 半宽 24 与试管玻璃内壁（cx±24）完全贴合，左右沿边不留白缝；锥尖收在真实锥底 458
@@ -1330,8 +1385,9 @@ function wasteMarkup() {
     <rect x="802" y="330" width="136" height="15" rx="5" fill="#e6eef6" stroke="#a9c1d3"/>
     <rect x="844" y="334" width="52" height="8" rx="4" fill="#22384a" opacity=".5"/>
     <text x="870" y="468" font-size="9" fill="#7f97ab" text-anchor="middle" font-family="Segoe UI">WASTE</text>
-    <rect id="wasteHit" x="808" y="260" width="124" height="130" rx="16" fill="none" stroke="#1f9e74" stroke-width="2.2" stroke-dasharray="6 5" opacity=".0"/>
-    <text x="870" y="300" font-size="10" fill="#15805a" text-anchor="middle" font-weight="700">桶口 · 对准这里</text>
+    <!-- 桶口绿框：框内整块都可点，点一下就把枪移到桶口完成对准 -->
+    <rect id="wasteHit" x="808" y="260" width="124" height="130" rx="16" fill="rgba(31,158,116,.07)" stroke="#1f9e74" stroke-width="2.2" stroke-dasharray="6 5" opacity=".45" pointer-events="all" style="cursor:pointer"/>
+    <text x="870" y="300" font-size="10" fill="#15805a" text-anchor="middle" font-weight="700" pointer-events="none">桶口 · 点这里对准</text>
   </g>`;
 }
 
@@ -1409,7 +1465,7 @@ function renderStage(n) {
     svg.setAttribute("viewBox", "540 100 280 400");
     svg.innerHTML = sceneDefs() + background(1000, 620, 470) +
       tubeMarkup(DST, session.dstVol, "PCR 5（放大）") +
-      `<rect id="dstWall" x="${DST.cx + 17}" y="${DST.mouth + 8}" width="6" height="${DST.bottom - DST.mouth - 16}" fill="rgba(31,158,116,0)" stroke="#1f9e74" stroke-width="1.2" stroke-dasharray="3 3"/>` +
+      `<rect id="dstWall" x="${DST.cx - 23}" y="${DST.mouth + 8}" width="6" height="${DST.bottom - DST.mouth - 16}" fill="rgba(31,158,116,0)" stroke="#1f9e74" stroke-width="1.2" stroke-dasharray="3 3"/>` +
       angleGauge() + pipetteMarkup();
     bindDrag(n);
     bindTiltGauge();
@@ -1421,7 +1477,17 @@ function renderStage(n) {
     const thumb = document.getElementById("thumbTarget");
     if (thumb) {
       thumb.addEventListener("pointerdown", e => e.stopPropagation());
-      thumb.addEventListener("click", e => { e.stopPropagation(); placeThumb(); });
+      thumb.addEventListener("click", e => {
+        e.stopPropagation();
+        // 必须是蓝色大拇指压到橙框上/框内才算，点歪了只提示
+        if (!thumbCursorOnBox()) { setError("把蓝色大拇指移到橙框上、压住框再点一下。"); return; }
+        placeThumb();
+      });
+    }
+    const waste = document.getElementById("wasteHit");
+    if (waste) {
+      waste.addEventListener("pointerdown", e => e.stopPropagation());
+      waste.addEventListener("click", e => { e.stopPropagation(); snapToWaste(); });
     }
     updateWasteVisuals();
   } else if (n === 7) {
@@ -1496,16 +1562,10 @@ function renderControls(n) {
       <h3 class="control-title">体积设定</h3>
       <div class="vol-readout"><span id="volValue">200.0</span><span>µL</span></div>
       <div class="vol-target">目标 150.0 µL</div>
-      <div class="nudge-row">
-        <button id="volMinus" type="button">− 0.1 µL</button>
-        <button id="volPlus" type="button">+ 0.1 µL</button>
-      </div>
       <button id="volConfirm" class="primary-btn" type="button">确认体积</button>
       <div id="volFeedback" class="vol-feedback hidden" role="status"></div>
       <div class="control-note">点实物图旁的 ↺ / ↻ 按钮：每点一次变 0.1 µL，按住可连续变化。中间量程窗从上到下同步显示百位 / 十位 / 个位 / 小数后一位（横线是小数点）。到 150.0 后点“确认体积”。</div>
     `;
-    $("#volMinus").addEventListener("click", () => setVolume(session.vol - 0.1));
-    $("#volPlus").addEventListener("click", () => setVolume(session.vol + 0.1));
     $("#volConfirm").addEventListener("click", confirmVolume);
   } else if (n === 3) {
     cc.innerHTML = `
@@ -1533,44 +1593,31 @@ function renderControls(n) {
   } else if (n === 5) {
     cc.innerHTML = `
       <h3 class="control-title">排液手势</h3>
-      <div class="tilt-head">
-        <span class="tilt-label">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M2.2 13.2h11.2"/>
-            <path d="M2.6 13.2 12 3.4"/>
-            <path d="M7.4 13.2a5.2 5.2 0 0 0-1.5-3.7"/>
-          </svg>
-          调倾角
-        </span>
-        <span class="tilt-sub">拖滑块或量角器 · 目标 30°（12–45°）</span>
-      </div>
-      <div class="tilt-wrap">
-        <input id="tiltRange" type="range" min="0" max="45" step="1" value="0" aria-label="倾角">
-        <span class="tilt-val" id="tiltValue">0°</span>
-      </div>
       <div class="gear-stack">
         <button id="gear1" class="gear-action" type="button">按下一档</button>
         <button id="gear2" class="gear-action two" type="button" disabled>按到二档</button>
         <button id="gear0" class="gear-action zero" type="button" disabled>松手复位</button>
       </div>
       <div class="gear-meter"><span data-g="0" class="on">复位</span><span data-g="1">一档</span><span data-g="2">二档</span></div>
-      <div class="control-note">先把吸头靠到右壁、倾角调到 30°，再按顺序：一档 → 二档 → 松手。</div>
+      <div class="control-note">在画面里把吸头靠到左壁，用场景中的量角器把倾角调到 30°，再按顺序：一档 → 二档 → 松手。</div>
     `;
-    $("#tiltRange").addEventListener("input", e => setTilt(Number(e.target.value)));
     bindGearButtons();
   } else if (n === 6) {
     cc.innerHTML = `
       <h3 class="control-title">退吸头</h3>
       <div class="thumb-step" id="thumbStep">
         <div class="thumb-emoji"><img src="assets/thumb-pointer.png" alt="大拇指"></div>
-        <div class="thumb-copy"><b>① 放置大拇指到退枪头位置</b><span>先把大拇指移进灰杆顶端的方框内</span></div>
-        <button id="thumbBtn" class="mini-btn" type="button">放这里</button>
+        <div class="thumb-copy"><b>① 把蓝色大拇指按到橙框上</b><span>鼠标移到枪顶橙框上，让蓝色大拇指压住框，再点一下</span></div>
+        <button id="thumbBtn" class="mini-btn" type="button">去按橙框</button>
       </div>
       <button id="ejectBtn" class="primary-btn" type="button" disabled>② 按下大拇指退吸头</button>
-      <div class="control-note">鼠标就是大拇指：移到枪身右上方灰色退头杆顶端的方框内，点一下；位置正确后，退吸头按钮才会解锁。</div>
+      <div class="control-note">鼠标就是大拇指：把<b>蓝色大拇指移到橙框上、压住框</b>再点一下，大拇指才就位、退吸头按钮解锁；点在框外面不算。桶口绿色虚线框也可以直接点，枪会自动过去对准。</div>
       <div class="kbd-note">本关起点吸头已排空；带液退头会被阻止。</div>
     `;
-    $("#thumbBtn").addEventListener("click", placeThumb);
+    // 左侧卡片/按钮只给提示，不再直接完成；第一步必须到画面橙框上按住
+    const hintHold = () => { if (!session.thumb) stageHint("请到画面里，把蓝色大拇指移到枪顶橙框上、压住框再点一下"); };
+    $("#thumbBtn").addEventListener("click", hintHold);
+    $("#thumbStep").addEventListener("click", hintHold);
     $("#ejectBtn").addEventListener("click", tryEject);
   } else if (n === 7) {
     cc.innerHTML = `
@@ -1594,8 +1641,8 @@ function bindGearButtons() {
    只有按下右侧档位交互键（setGear）时才演示一次按钮下沉 / 弹回，其它时刻小窗保持当前状态。
    pointer-events:none 保证不会挡住画布上的拖动。 */
 const GEAR_ZOOM_LEVELS = [3, 4, 5];
-const GZ_VIEW = { x: -42, y: -374, w: 84, h: 106 };      // 实拍枪顶（场景坐标）
-const GZ_VIEW_VEC = { x: -32, y: -352, w: 64, h: 96 };   // 矢量枪顶（图片加载失败时）
+const GZ_VIEW = { x: -38, y: -374, w: 76, h: 96 };      // 实拍枪顶（场景坐标，收紧取景以放大按钮）
+const GZ_VIEW_VEC = { x: -29, y: -352, w: 58, h: 88 };  // 矢量枪顶（图片加载失败时）
 function gzRestY() { return PHOTO_OK ? -368 + K * 5 : -342; }   // 黄钮顶端（未按下）
 /* 与 #photoPip / #vecPip 同源同坐标，但完全独立的一份副本（可单独控制下沉） */
 function gzCapLayers() {
@@ -1626,6 +1673,8 @@ function renderGearZoom(n) {
     box.innerHTML = "";
     return;
   }
+  // 第 3/4/5 关小窗统一放场景左侧，避免挡住画面主体
+  box.classList.add("gz-left");
   const v = PHOTO_OK ? GZ_VIEW : GZ_VIEW_VEC;
   const restY = gzRestY().toFixed(1);
   box.innerHTML = `
@@ -1836,7 +1885,7 @@ function lockVolumeControls() {
     const b = document.getElementById(id);
     if (b) { b.style.pointerEvents = "none"; b.style.opacity = ".55"; b.classList.remove("pressed"); }
   });
-  ["volMinus", "volPlus", "volConfirm"].forEach(id => {
+  ["volConfirm"].forEach(id => {
     const b = document.getElementById(id);
     if (b) { b.disabled = true; b.classList.remove("is-ready"); }
   });
@@ -1960,9 +2009,9 @@ function setGearCore(g) {
         setError("吸头里没有液体。");
         s.gear = 0; updateAll(); return;
       }
-      const w = wallDist(DST, s.x);
+      const w = condWDst(s);
       if (w > 6) {
-        setError(`贴住右壁再排液（现在离壁 ${Math.round(w)} px）。`);
+        setError(`贴住左壁再排液（现在离左壁 ${Math.round(w)} px）。`);
         s.gear = 0; updateAll(); return;
       }
       if (Math.abs(s.tilt) < 12 || Math.abs(s.tilt) > 45) {
@@ -2067,6 +2116,16 @@ function confirmTip() {
   updateAll();
   completeLevel();
 }
+/* 第 6 关第一步判定：蓝色大拇指（鼠标光标图）必须压到橙框上或框内，才算按到位 */
+function thumbCursorOnBox() {
+  const cur = $("#thumbCursor");
+  const rects = document.querySelectorAll("#thumbTarget rect");
+  if (!cur || rects.length < 2) return true;      // 结构异常时不拦
+  if (cur.classList.contains("hidden")) return true; // 光标未显示（键盘/程序触发）不拦
+  const a = cur.getBoundingClientRect();          // 蓝色大拇指实际占位
+  const b = rects[1].getBoundingClientRect();     // 橙框
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
 function placeThumb() {
   const s = session;
   if (!s || s.n !== 6 || s.thumb) return;
@@ -2105,6 +2164,14 @@ function confirmHome() {
 function overWaste() {
   const s = session;
   return s && s.x > 808 && s.x < 932 && s.y > 260 && s.y < 390;
+}
+/* 点桶口绿框：把枪直接移到框内完成对准，同时提示下一步 */
+function snapToWaste() {
+  const s = session;
+  if (!s || s.n !== 6) return;
+  moveTo(870, 325);
+  stageHint(overWaste() ? "枪头已对准桶口，点“按下大拇指退吸头”完成" : "已移到桶口");
+  updateAll();
 }
 /* 第 7 关：画面上真正要放进绿框的是整支枪身，不是会话锚点 (s.x,s.y)。
    实拍枪局部 bbox：x ±148*K、y [-368,-66]；矢量备用枪：x ±22、y [-342,-48]。
@@ -2221,7 +2288,7 @@ function canGear1(s) {
   }
   if (s.n === 5) {
     return !s.stage1 && inTube(DST, s.x, s.y) && s.tipVol > 0 &&
-           wallDist(DST, s.x) <= 6 && Math.abs(s.tilt) >= 12 && Math.abs(s.tilt) <= 45;
+           condWDst(s) <= 6 && Math.abs(s.tilt) >= 12 && Math.abs(s.tilt) <= 45;
   }
   return true;
 }
@@ -2243,7 +2310,12 @@ function canGear0(s) {
 function condDepth(s) { return depthMM(SRC, s.y, s.srcVol); }
 function condDepthTxt(s) { const v = condDepth(s); return v < 0 ? `↑${Math.abs(v).toFixed(1)}mm` : `${v.toFixed(1)}mm`; }
 function condWSrc(s) { return wallDist(SRC, s.x); }
-function condWDst(s) { return wallDist(DST, s.x); }
+/* 第 5 关：贴壁判定的基准是「左内壁」（与画面左侧那条绿色虚线一致）。
+   wallDist() 取的是左右两侧的最近距离，这里单独算到左壁的距离。 */
+function condWDst(s) {
+  if (!s || !inTube(DST, s.x, s.y)) return 99;
+  return Math.max(0, s.x - (DST.cx - DST.w / 2));
+}
 function condInSrc(s) { return inTube(SRC, s.x, s.y); }
 function condInDst(s) { return inTube(DST, s.x, s.y); }
 
@@ -2290,7 +2362,7 @@ const PHASES = {
     { id:"ready", short:"就位排液", title:"第 1 步 · 就位排液", allow:["gear1"], hint:"条件齐了，点「按下一档」排液", done:s=>s.stage1,
       rows:[
         { id:"tilt", label:"倾角调到 12–45°", realtime:true, live:s=>s.tilt+"°", done:s=>s.tilt>=12&&s.tilt<=45 },
-        { id:"wall", label:"吸头贴住右壁", realtime:true, live:s=>Math.round(condWDst(s))+"px", done:s=>condWDst(s)<=6 },
+        { id:"wall", label:"吸头贴住左壁", realtime:true, live:s=>condInDst(s)?Math.round(condWDst(s))+"px":"未入管", done:s=>condWDst(s)<=6 },
         { id:"in", label:"吸头在 PCR 5 管", realtime:true, live:s=>condInDst(s)?"已就位":"未就位", done:s=>condInDst(s) }
       ] },
     { id:"blow", short:"吹出残液", title:"第 2 步 · 吹出残液", allow:["gear2"], hint:"点「按到二档」吹出残液", done:s=>s.stage2,
@@ -2302,19 +2374,17 @@ const PHASES = {
       rows:[{ id:"done", label:"松手复位结束本关", live:s=>s.done?"已完成":"待操作", done:s=>s.done }] }
   ],
   6: [
-    { id:"thumb", short:"放大拇指", title:"第 1 步 · 放大拇指", allow:["thumb"], hint:"点右侧「放这里」",
-      rows:[{ id:"thumb", label:"大拇指放到退头杆", live:s=>s.thumb?"已就位":"未就位", done:s=>s.thumb }] },
+    { id:"thumb", short:"放大拇指", title:"第 1 步 · 放大拇指", allow:["thumb"], hint:"把蓝色大拇指压到枪顶橙框上点一下",
+      rows:[{ id:"thumb", label:"大拇指压住橙框", live:s=>s.thumb?"已就位":"未就位", done:s=>s.thumb }] },
     { id:"align", short:"对准桶口", title:"第 2 步 · 对准桶口", allow:["eject"], hint:"桶口已对准，点右侧「② 按下大拇指退吸头」", done:s=>!s.tip,
       rows:[{ id:"waste", label:"枪头对准桶口", realtime:true, live:s=>overWaste()?"已对准":"未对准", done:s=>overWaste() }] },
     { id:"eject", short:"退吸头", title:"第 3 步 · 退吸头", allow:["eject"], hint:"点右侧「② 按下大拇指退吸头」",
       rows:[{ id:"tip", label:"吸头已退掉", live:s=>s.tip?"未退":"已脱", done:s=>!s.tip }] }
   ],
   7: [
-    { id:"tip", short:"吸头已退", title:"第 1 步 · 吸头已退", allow:[], hint:"",
-      rows:[{ id:"tip", label:"吸头已退掉", live:s=>s.tip?"未退":"已脱", done:s=>!s.tip }] },
-    { id:"home", short:"放入归位区", title:"第 2 步 · 放入归位区", allow:["home"], hint:"点右侧「确认归位」", done:s=>s.done,
+    { id:"home", short:"放入归位区", title:"第 1 步 · 放入归位区", allow:["home"], hint:"把枪放进绿色归位区后，点「确认归位」", done:s=>s.done,
       rows:[{ id:"in", label:"移液枪放入归位区", realtime:true, live:s=>inHome()?"已放入":"未放入", done:s=>inHome() }] },
-    { id:"confirm", short:"确认归位", title:"第 3 步 · 确认归位", allow:["home"], hint:"点右侧「确认归位」",
+    { id:"confirm", short:"确认归位", title:"第 2 步 · 确认归位", allow:["home"], hint:"点「确认归位」",
       rows:[{ id:"ok", label:"确认归位", live:s=>s.done?"已归位":"待确认", done:s=>s.done }] }
   ]
 };
@@ -2374,7 +2444,7 @@ function updateCondCard() {
   const P = s ? PHASES[s.n] : null;
   if (!s || !P || !P.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
   el.classList.remove("hidden");
-  el.classList.toggle("cond-right", s.n === 5);
+  el.classList.toggle("cond-left-tight", s.n === 5);
   const ph = P[Math.min(s.phase, P.length - 1)];
   const rows = ph.rows.map(r => {
     const ok = rowSatisfied(s, ph, r);
@@ -2446,7 +2516,7 @@ function updateTargetVisuals() {
   if (liq) liq.setAttribute("d", dstLiquidD(s.dstVol));
   const wall = $("#dstWall");
   if (wall) {
-    const near = wallDist(DST, s.x) <= 6;
+    const near = condWDst(s) <= 6;
     wall.setAttribute("fill", near ? "rgba(31,158,116,.25)" : "rgba(31,158,116,0)");
   }
   const needle = $("#angleNeedle");
@@ -2460,7 +2530,7 @@ function updateTargetVisuals() {
 function updateWasteVisuals() {
   const s = session;
   const hit = $("#wasteHit");
-  if (hit) hit.setAttribute("opacity", overWaste() ? "1" : "0");
+  if (hit) hit.setAttribute("opacity", overWaste() ? "1" : ".45");
   const target = $("#thumbTarget");
   const placed = $("#thumbPlaced");
   if (target) target.style.display = s && s.thumb ? "none" : "";
@@ -2469,8 +2539,8 @@ function updateWasteVisuals() {
   if (step) step.classList.toggle("done", !!(s && s.thumb));
   const thumbBtn = $("#thumbBtn");
   if (thumbBtn) {
-    thumbBtn.disabled = !(s && !s.thumb && phaseAllows(s, "thumb"));
-    thumbBtn.textContent = s && s.thumb ? "已就位" : "放这里";
+    thumbBtn.disabled = !!(s && s.thumb);
+    thumbBtn.textContent = s && s.thumb ? "已就位" : "去按橙框";
   }
   const prompt = $("#thumbPrompt");
   if (prompt) {
@@ -2478,7 +2548,7 @@ function updateWasteVisuals() {
     prompt.classList.toggle("ok", !!(s && s.thumb));
     prompt.textContent = s && s.thumb
       ? "✓ 位置正确，退吸头已解锁"
-      : "放置大拇指到退枪头位置";
+      : "把蓝色大拇指压到枪顶橙框上，点一下";
   }
   const wrap = document.querySelector(".stage-wrap");
   if (wrap) wrap.classList.toggle("thumb-mode", !!(s && !s.thumb));
@@ -2744,9 +2814,13 @@ $("#backBtn").addEventListener("click", () => {
   const cursor = $("#thumbCursor");
   if (!wrap || !cursor) return;
   const active = () => session && session.n === 6 && !session.thumb;
+  // 整页用 html{zoom:var(--page-zoom)} 缩放，fixed 元素的 left/top 会被再放大一次，
+  // 必须除以当前缩放值，蓝色大拇指才会真正跟着鼠标点走。
+  const zoomK = () => parseFloat(document.documentElement.style.getPropertyValue("--page-zoom")) || 1.1;
   const setPos = e => {
-    cursor.style.left = e.clientX + "px";
-    cursor.style.top = e.clientY + "px";
+    const k = zoomK();
+    cursor.style.left = (e.clientX / k) + "px";
+    cursor.style.top = (e.clientY / k) + "px";
   };
   wrap.addEventListener("pointerenter", e => {
     if (!active()) return;
@@ -2759,6 +2833,23 @@ $("#backBtn").addEventListener("click", () => {
     cursor.classList.remove("hidden");
   });
   wrap.addEventListener("pointerleave", () => cursor.classList.add("hidden"));
+})();
+
+/* ---------------- 整页缩放 ---------------- */
+(function initPageZoom() {
+  const bar = $("#pageZoom");
+  if (!bar) return;
+  const MIN = 0.8, MAX = 1.6, STEP = 0.1;
+  let z = 1.1;
+  const apply = () => {
+    document.documentElement.style.setProperty("--page-zoom", String(z));
+    $("#zoomVal").textContent = Math.round(z * 100) + "%";
+    $("#zoomOut").disabled = z <= MIN + 1e-6;
+    $("#zoomIn").disabled = z >= MAX - 1e-6;
+  };
+  $("#zoomOut").addEventListener("click", () => { z = Math.max(MIN, Math.round((z - STEP) * 10) / 10); apply(); });
+  $("#zoomIn").addEventListener("click", () => { z = Math.min(MAX, Math.round((z + STEP) * 10) / 10); apply(); });
+  apply();
 })();
 
 /* ---------------- 启动 ---------------- */
